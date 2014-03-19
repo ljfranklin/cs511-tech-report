@@ -26,7 +26,9 @@
 		
 		$existing_values = $paperDb->get_row($query, ARRAY_A);
 		echo $existing_values['title'];
-		$existing_values['filename'] = get_paper_filename($paper_id, $existing_values['title']);
+		$pdf_path = get_paper_filename($paper_id, $existing_values['title']);
+		$base_path = ABSPATH;
+		$existing_values['filename'] = "../" . substr($pdf_path, strlen($base_path));
     }
     
     $get_existing_value = function($name) use ($existing_values) {
@@ -135,7 +137,7 @@
 							<a href="<?php echo $get_existing_value('filename') ?>" target="_blank">Existing PDF</a><br/>
 							Replace File:
 						<?php } ?>
-						<input type="file" name="paper_upload" id="paper_upload" required/>
+						<input type="file" name="paper_upload" id="paper_upload" accept="application/pdf" required/>
 					</td>
 				</tr>
 			</tbody>
