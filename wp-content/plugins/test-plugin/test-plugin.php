@@ -3,7 +3,6 @@
  * Plugin Name: Test Plugin
  * Description: Just a test
  */
-
 	function getPaperTitle($paperId) {
 		$paperDb = new wpdb("wordpress", "wp1234", "tech_papers", "localhost");
 
@@ -24,8 +23,9 @@
 	}
 
 	function test_admin_actions() {
- 		add_menu_page("Upload Paper", "Upload Paper", 1, "Upload Paper", "test_admin");
- 		add_menu_page("List Papers", "List Papers", 1, "ListPapers", "test_admin_list");
+ 		add_menu_page("Research Papers", "Research Papers", 1, "list-papers", "test_admin_list");
+ 		add_submenu_page("list-papers", "All Papers", "All Papers", 1, "list-papers", "test_admin_list");
+ 		add_submenu_page("list-papers", "New Paper", "Add Paper", 1, "upload-paper", "test_admin");
 	}
 	
 	function test_get_metadata($postId) {
@@ -58,6 +58,23 @@
 
 		return $paperAuthor;
 	}
+	
+	function get_paper_filename($paper_id, $title=NULL) {
+	
+		if (is_null($title)) {
+			$paperDb = new wpdb("wordpress", "wp1234", "tech_papers", "localhost");
+			$title = $paperDb->get_var("SELECT title FROM paper WHERE paper_id=$paper_id");
+		}
+	
+    	$plugin_dir = plugin_dir_path( __FILE__ );
+    	$filename = preg_replace("/[^a-zA-Z]+/", "", $title) . "-" . strval($paper_id);
+    	$maxlength = 15;
+    	$filename = substr($filename, $maxlength);
+    	return sprintf('%suploads/%s.pdf',
+        		$plugin_dir,
+        	    $filename
+        	);
+    }
  
 	add_action('admin_menu', 'test_admin_actions');
 ?>

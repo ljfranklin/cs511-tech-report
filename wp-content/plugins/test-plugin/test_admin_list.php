@@ -1,6 +1,4 @@
 <?php
-error_reporting(E_ALL);
-ini_set('display_errors', 1);
 
 if(!class_exists('WP_List_Table')){
 	require_once( ABSPATH . 'wp-admin/includes/class-wp-list-table.php' );
@@ -9,7 +7,6 @@ if(!class_exists('WP_List_Table')){
 if (isset($_GET['action']) && $_GET['action'] == 'delete') {
 	$paper_id = $_GET['paper_id'];
 	delete_paper($paper_id);
-	$_SERVER['REQUEST_URI'] = remove_query_arg( array( 'action', 'paper_id' ), $_SERVER['REQUEST_URI'] );
 }
 
 if (isset($_POST['action']) && $_POST['action'] == 'delete') {
@@ -30,6 +27,7 @@ function delete_paper($paper_id) {
 	$post_id = $wpdb->get_var($query);
 	wp_delete_post($post_id, true);
 	
+	unlink(get_paper_filename($paper_id));
 	$paperDb = new wpdb("wordpress", "wp1234", "tech_papers", "localhost");
 	$paperDb->delete( 'paper', array( 'paper_id' => $paper_id ));	
 }
@@ -52,6 +50,7 @@ function delete_multiple_papers($paper_ids) {
 	
 	$paperDb = new wpdb("wordpress", "wp1234", "tech_papers", "localhost");
 	foreach ($paper_ids as $paper_id){
+		unlink(get_paper_filename($paper_id));
 		$paperDb->delete( 'paper', array( 'paper_id' => $paper_id ));	
 	}
 }
@@ -137,7 +136,7 @@ $wp_list_table->prepare_items();
 
 
 <div class="wrap">
-	<h2>Papers</h2>
+	<h2>Research Papers</h2>
 	<form action="" method="POST">
 		<?php $wp_list_table->display(); ?>
 	</form>

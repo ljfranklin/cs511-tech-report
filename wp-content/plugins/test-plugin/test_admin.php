@@ -10,30 +10,6 @@
     	
     	$paperDb = new wpdb("wordpress", "wp1234", "tech_papers", "localhost");
     	
-    	$uploadedfile = $_FILES['paper_upload'];
-    	$finfo = new finfo(FILEINFO_MIME_TYPE);
-    	if (false === array_search(
-    	    $finfo->file($uploadedfile['tmp_name']),
-    	    array(
-    	        'pdf' => 'application/pdf'
-    	    ),
-    	    true
-    	)) {
-        	throw new RuntimeException('Invalid file format.');
-    	}
-    	
-    	$plugin_dir = plugin_dir_path( __FILE__ );
-		if (!move_uploaded_file(
-        	$_FILES['paper_upload']['tmp_name'],
-        	sprintf('%suploads/%s.pdf',
-        		$plugin_dir,
-        	    sha1_file($_FILES['paper_upload']['tmp_name'])
-        	)
-    	)) {
-    	    throw new RuntimeException('Failed to move uploaded file.');
-    	}
-    	
-        
         $title = $_POST['paper_title'];
         $author = $_POST['paper_author'];
         $abstract = $_POST['paper_abstract'];
@@ -62,15 +38,39 @@
 			'post_category' => array(0)
 		);
 		$postId = wp_insert_post($newPost);
-		
 		add_post_meta($postId, 'paper_id', $paperId);
+		
+		process_file_upload($paperId, $title);
 		
 		wp_redirect(get_site_url()."/?p=$postId");
 		exit;
     } 
+    
+    function process_file_upload($paper_id, $title) {
+    
+    	$uploadedfile = $_FILES['paper_upload'];
+    	$finfo = new finfo(FILEINFO_MIME_TYPE);
+    	if (false === array_search(
+    	    $finfo->file($uploadedfile['tmp_name']),
+    	    array(
+    	        'pdf' => 'application/pdf'
+    	    ),
+    	    true
+    	)) {
+        	throw new RuntimeException('Invalid file format.');
+    	}
+    	
+    	
+		if (!move_uploaded_file(
+        	$_FILES['paper_upload']['tmp_name'],
+        	get_paper_filename($paper_id, $title)
+    	)) {
+    	    throw new RuntimeException('Failed to move uploaded file.');
+    	}
+    }
 ?>
 <div class="wrap">     
-	<h2>Upload a Paper</h2>
+	<h2>Upload a Research Paper</h2>
 	<form id="paper-upload-form" method="post" action="<?php echo $_SERVER['REQUEST_URI'] ?>&noheader=true" enctype="multipart/form-data">
 		<input type="hidden" name="test_hidden" value="Y"/>
 		<table class="form-table">
