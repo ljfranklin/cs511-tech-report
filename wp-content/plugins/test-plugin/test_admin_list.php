@@ -2,14 +2,24 @@
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
 
-global $wpdb;
-
 if(!class_exists('WP_List_Table')){
 	require_once( ABSPATH . 'wp-admin/includes/class-wp-list-table.php' );
 }
 
 if (isset($_GET['action']) && $_GET['action'] == 'delete') {
 	$paper_id = $_GET['paper_id'];
+	delete_paper($paper_id);
+	$_SERVER['REQUEST_URI'] = remove_query_arg( array( 'action', 'paper_id' ), $_SERVER['REQUEST_URI'] );
+}
+
+if (isset($_POST['action']) && $_POST['action'] == 'delete') {
+	$paper_ids = $_POST['paper_id'];
+	delete_multiple_papers($paper_ids);
+}
+
+function delete_paper($paper_id) {
+	global $wpdb;
+
 	$query = "SELECT wposts.ID
 		FROM ".$wpdb->posts." AS wposts
 		INNER JOIN ".$wpdb->postmeta." AS wpostmeta
@@ -21,7 +31,29 @@ if (isset($_GET['action']) && $_GET['action'] == 'delete') {
 	wp_delete_post($post_id, true);
 	
 	$paperDb = new wpdb("wordpress", "wp1234", "tech_papers", "localhost");
-	$paperDb->delete( 'paper', array( 'paper_id' => $paper_id ));
+	$paperDb->delete( 'paper', array( 'paper_id' => $paper_id ));	
+}
+
+function delete_multiple_papers($paper_ids) {
+	global $wpdb;
+
+	$id_string = "'" . implode("','", $paper_ids) . "'";
+	$query = "SELECT wposts.ID
+		FROM ".$wpdb->posts." AS wposts
+		INNER JOIN ".$wpdb->postmeta." AS wpostmeta
+		ON wpostmeta.post_id = wposts.ID
+		AND wpostmeta.meta_key = 'paper_id'
+		AND wpostmeta.meta_value IN ($id_string)";
+		
+	$post_ids = $wpdb->get_col($query);
+	foreach ($post_ids as $post_id) {
+		wp_delete_post($post_id, true);
+	}	
+	
+	$paperDb = new wpdb("wordpress", "wp1234", "tech_papers", "localhost");
+	foreach ($paper_ids as $paper_id){
+		$paperDb->delete( 'paper', array( 'paper_id' => $paper_id ));	
+	}
 }
 
 class Link_List_Table extends WP_List_Table {
@@ -86,7 +118,7 @@ class Link_List_Table extends WP_List_Table {
 	
 	function column_cb($item) {
         return sprintf(
-            '<input type="checkbox" name="book[]" value="%s" />', $item->paper_id
+            '<input type="checkbox" name="paper_id[]" value="%s" />', $item->paper_id
         );    
     }
 	
@@ -100,12 +132,13 @@ class Link_List_Table extends WP_List_Table {
 
 $wp_list_table = new Link_List_Table();
 $wp_list_table->prepare_items();
-
 ?>
 
 
 
-<div class="wrap">     
+<div class="wrap">
 	<h2>Papers</h2>
-	<?php $wp_list_table->display(); ?>
+	<form action="" method="POST">
+		<?php $wp_list_table->display(); ?>
+	</form>
 </div>

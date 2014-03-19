@@ -25,7 +25,7 @@
 
 	function test_admin_actions() {
  		add_menu_page("Upload Paper", "Upload Paper", 1, "Upload Paper", "test_admin");
- 		add_menu_page("List Papers", "List Papers", 1, "List Papers", "test_admin_list");
+ 		add_menu_page("List Papers", "List Papers", 1, "ListPapers", "test_admin_list");
 	}
 	
 	function test_get_metadata($postId) {
