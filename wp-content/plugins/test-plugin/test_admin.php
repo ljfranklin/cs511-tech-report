@@ -8,6 +8,36 @@
 
     if(isset($_POST['test_hidden']) && $_POST['test_hidden'] == 'Y') {
     	
+    	add_new_paper();
+		
+		wp_redirect(get_site_url()."/?p=$postId");
+		exit;
+    } 
+    
+    
+    $is_editing = false;
+    $existing_values = array();
+    if (isset($_GET['paper_id']) && (isset($_GET['action']) && $_GET['action'] == 'edit')){
+    	$paper_id = $_GET['paper_id'];
+    	$is_editing = true;
+    	
+    	$paperDb = new wpdb("wordpress", "wp1234", "tech_papers", "localhost");
+		$query = "SELECT * FROM paper WHERE paper_id=$paper_id";
+		
+		$existing_values = $paperDb->get_row($query, ARRAY_A);
+		echo $existing_values['title'];
+		$existing_values['filename'] = get_paper_filename($paper_id, $existing_values['title']);
+    }
+    
+    $get_existing_value = function($name) use ($existing_values) {
+    	if (array_key_exists($name, $existing_values)) {
+    		return $existing_values[$name];
+    	} else {
+    		return "";
+    	}
+    };
+    
+    function add_new_paper() {
     	$paperDb = new wpdb("wordpress", "wp1234", "tech_papers", "localhost");
     	
         $title = $_POST['paper_title'];
@@ -41,10 +71,7 @@
 		add_post_meta($postId, 'paper_id', $paperId);
 		
 		process_file_upload($paperId, $title);
-		
-		wp_redirect(get_site_url()."/?p=$postId");
-		exit;
-    } 
+    }
     
     function process_file_upload($paper_id, $title) {
     
@@ -69,7 +96,7 @@
     	}
     }
 ?>
-<div class="wrap">     
+<div class="wrap">
 	<h2>Upload a Research Paper</h2>
 	<form id="paper-upload-form" method="post" action="<?php echo $_SERVER['REQUEST_URI'] ?>&noheader=true" enctype="multipart/form-data">
 		<input type="hidden" name="test_hidden" value="Y"/>
@@ -80,7 +107,7 @@
 						<label for="paper_title">Paper Title:</label>
 					</th>
 					<td>
-						<input type="text" id="paper_title" name="paper_title" size="30" required/>
+						<input type="text" id="paper_title" name="paper_title" size="30" value="<?php echo $get_existing_value('title') ?>" required/>
 					</td>
 				</tr>
 				<tr>
@@ -88,7 +115,7 @@
 						<label for="paper_author">Author:</label>
 					</th>
 					<td>
-						<input type="text" id="paper_author" name="paper_author" size="30" required/>
+						<input type="text" id="paper_author" name="paper_author" size="30" value="<?php echo $get_existing_value('author') ?>" required/>
 					</td>
 				</tr>
 				<tr>
@@ -96,7 +123,7 @@
 						<label for="paper_abstract">Abstract:</label>
 					</th>
 					<td>
-						<textarea id="paper_abstract" name="paper_abstract" rows="10" cols="30" required></textarea>
+						<textarea id="paper_abstract" name="paper_abstract" rows="10" cols="30" value="<?php echo $get_existing_value('abstract') ?>" required></textarea>
 					</td>
 				</tr>
 				<tr>
@@ -104,6 +131,10 @@
 						<label for="paper_upload">PDF Upload:</label>
 					</th>
 					<td>
+						<?php if ($is_editing) { ?>
+							<a href="<?php echo $get_existing_value('filename') ?>" target="_blank">Existing PDF</a><br/>
+							Replace File:
+						<?php } ?>
 						<input type="file" name="paper_upload" id="paper_upload" required/>
 					</td>
 				</tr>

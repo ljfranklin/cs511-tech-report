@@ -108,7 +108,7 @@ class Link_List_Table extends WP_List_Table {
 	
 	function column_title($item) {
   		$actions = array(
-            'edit'      => sprintf('<a href="?page=%s&action=%s&paper_id=%s">Edit</a>',$_REQUEST['page'],'edit',$item->paper_id),
+            'edit'      => sprintf('<a href="?page=%s&action=%s&paper_id=%s">Edit</a>','upload-paper','edit',$item->paper_id),
             'delete'    => sprintf('<a href="?page=%s&action=%s&paper_id=%s">Delete</a>',$_REQUEST['page'],'delete',$item->paper_id)
         );
 

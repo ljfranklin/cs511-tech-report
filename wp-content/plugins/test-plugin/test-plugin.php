@@ -67,9 +67,11 @@
 		}
 	
     	$plugin_dir = plugin_dir_path( __FILE__ );
-    	$filename = preg_replace("/[^a-zA-Z]+/", "", $title) . "-" . strval($paper_id);
+    	$filename = preg_replace("/[^a-zA-Z0-9]+/", "", $title);
     	$maxlength = 15;
-    	$filename = substr($filename, $maxlength);
+    	$filename = substr($filename, 0, $maxlength);
+    	$filename .= "-" . strval($paper_id);
+    	
     	return sprintf('%suploads/%s.pdf',
         		$plugin_dir,
         	    $filename
