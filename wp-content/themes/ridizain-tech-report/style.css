@@ -5,4 +5,9 @@
 
 @import url("../ridizain/style.css");
 
-
+.paper_main_data {
+	border-style: none;
+}
+.paper_main_data td {
+	border-style: none;
+}

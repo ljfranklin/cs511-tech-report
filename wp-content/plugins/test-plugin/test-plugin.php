@@ -86,6 +86,29 @@
 		$base_path = ABSPATH;
 		return "../" . substr($pdf_path, strlen($base_path));
 	}
+	
+	function getPaperSearchResults($queryTerm) {
+		$paperDb = new wpdb("wordpress", "wp1234", "tech_papers", "localhost");
+	
+		$paperIds = $paperDb->get_col("SELECT paper_id FROM paper WHERE author LIKE '%$queryTerm%' OR title LIKE '%$queryTerm%' OR abstract LIKE '%$queryTerm%'");
+		if ($paperIds == NULL) {
+			return new WP_Query();
+		}
+		
+		$args = array (
+			'meta_query' => array(
+	       		array(
+	           		'key' => 'paper_id',
+	           		'value' => $paperIds,
+	           		'compare' => 'IN',
+	       		)
+	   		)
+		);
+ 
+		$search_query = new WP_Query( $args );
+		
+		return $search_query;
+	}
  
 	add_action('admin_menu', 'test_admin_actions');
 ?>
