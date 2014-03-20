@@ -17,8 +17,7 @@
 		
 		wp_redirect(get_site_url()."/?p=$postId");
 		exit;
-    } 
-    
+    }
     
     $is_editing = false;
     $existing_values = array();
@@ -84,7 +83,7 @@
 		return $postId;
     }
     
-    function update_paper() {
+    function update_paper($existing_values) {
 	    global $wpdb;
     	$paperDb = new wpdb("wordpress", "wp1234", "tech_papers", "localhost");
     	
@@ -128,17 +127,21 @@
 		);
 		$postId = wp_update_post($updatedPost);
 		
-		//TODO: handle deleting/renaming pdf files
-		process_file_upload($paper_id, $title);
+		if (empty($_FILES['paper_upload']['tmp_name']) === false) {
+			process_file_upload($paper_id, $title);
+		}
+		
+		$old_title = $_POST['previous_title'];
+		if (empty($_FILES['paper_upload']['tmp_name']) && $old_title !== $title) {
+    		rename_old_file($paper_id, $old_title, $title);
+    	} else if ($old_title !== $title) {
+			delete_old_file($paper_id, $old_title);
+		} 
 		
 		return $postId;
     }
     
     function process_file_upload($paper_id, $title) {
-    
-    	if (empty($_FILES['paper_upload']['tmp_name'])) {
-    		return;
-    	}
     
     	$uploadedfile = $_FILES['paper_upload'];
     	$finfo = new finfo(FILEINFO_MIME_TYPE);
@@ -160,6 +163,14 @@
     	    throw new RuntimeException('Failed to move uploaded file.');
     	}
     }
+    
+    function delete_old_file($paper_id, $old_title) {
+    	unlink(get_paper_filename($paper_id, $old_title));
+    }
+    
+    function rename_old_file($paper_id, $old_title, $new_title) {
+    	rename(get_paper_filename($paper_id, $old_title), get_paper_filename($paper_id, $new_title));
+    }
 ?>
 <div class="wrap">
 	<h2>Upload a Research Paper</h2>
@@ -167,6 +178,7 @@
 		<input type="hidden" name="action" value="<?php echo $is_editing ? 'edit' : 'create' ?>"/>
 		<?php if ($is_editing) { ?>
 			<input type="hidden" name="paper_id" value="<?php echo $get_existing_value('paper_id') ?>"/>
+			<input type="hidden" name="previous_title" value="<?php echo $get_existing_value('title') ?>"/>
 		<?php } ?>
 		<table class="form-table">
 			<tbody>
