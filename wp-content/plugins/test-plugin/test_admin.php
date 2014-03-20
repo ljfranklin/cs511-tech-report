@@ -132,6 +132,10 @@
     
     function process_file_upload($paper_id, $title) {
     
+    	if (empty($_FILES['paper_upload']['tmp_name'])) {
+    		return;
+    	}
+    
     	$uploadedfile = $_FILES['paper_upload'];
     	$finfo = new finfo(FILEINFO_MIME_TYPE);
     	if (false === array_search(
@@ -195,7 +199,7 @@
 							<a href="<?php echo $get_existing_value('filename') ?>" target="_blank">Existing PDF</a><br/>
 							Replace File:
 						<?php } ?>
-						<input type="file" name="paper_upload" id="paper_upload" accept="application/pdf" required/>
+						<input type="file" name="paper_upload" id="paper_upload" accept="application/pdf" <?php if ($is_editing == false) echo "required" ?>/>
 					</td>
 				</tr>
 			</tbody>
