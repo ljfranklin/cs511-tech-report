@@ -55,9 +55,11 @@
 			'paper', 
 			array( 
 				'title' => $title,
-				'author' => $author
+				'author' => $author,
+				'abstract' => $abstract
 			), 
 			array( 
+				'%s',
 				'%s',
 				'%s'
 			) 
@@ -95,12 +97,14 @@
 			'paper', 
 			array( 
 				'title' => $title,
-				'author' => $author
+				'author' => $author,
+				'abstract' => $abstract
 			), 
 			array(
 				'paper_id' => $paper_id
 			),
 			array( 
+				'%s',
 				'%s',
 				'%s'
 			),
@@ -187,7 +191,7 @@
 						<label for="paper_abstract">Abstract:</label>
 					</th>
 					<td>
-						<textarea id="paper_abstract" name="paper_abstract" rows="10" cols="30" value="<?php echo $get_existing_value('abstract') ?>" required></textarea>
+						<textarea id="paper_abstract" name="paper_abstract" rows="10" cols="30" required><?php echo $get_existing_value('abstract') ?></textarea>
 					</td>
 				</tr>
 				<tr>

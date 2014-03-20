@@ -42,13 +42,12 @@
 				edit_post_link( __( 'Edit', 'twentyfourteen' ), '<span class="edit-link">', '</span>' );
 			?>
 			
-			<?php the_meta(); ?>
-			
-			<?php test_get_metadata(get_the_ID()); ?>
-			
 			<div class="paper-author">
 				<?php echo test_paper_author(get_the_ID()); ?>
 			</div>
+			<p class="paper-abstract">
+				<?php echo test_paper_abstract(get_the_ID()); ?>
+			</p>
 		</div><!-- .entry-meta -->
 	</header><!-- .entry-header -->
 
