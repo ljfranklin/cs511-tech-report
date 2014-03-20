@@ -6,9 +6,6 @@
  * @subpackage Twenty_Fourteen
  * @since Twenty Fourteen 1.0
  */
- 
-error_reporting(E_ALL);
-ini_set('display_errors', 1);
 
 function getPaperSearchResults($queryTerm) {
 	$paperDb = new wpdb("wordpress", "wp1234", "tech_papers", "localhost");

@@ -1,0 +1,134 @@
+Theme Name:   Ridizain
+File Name:    Changelog
+Tested up to: 3.9-alpha
+Stable tag:	  1.0.25
+
+== Changelog ==
+
+= 1.0.25 =
+* Introducing tha_hooks support to the theme - first implementation, still needs more work.
+* Added option to show/hide Featured Content Excerpts - Due to popular demand.
+* Fixed bug on the secondary container being too far to the left
+
+= 1.0.24 =
+* Added option to give the featured content its original boxed look.
+* NEW: Added excerpts to Featured Content.
+
+= 1.0.23 =
+* Fixed bug on Featured Content filter that was resulting in Undefined index Notice being generated
+* Removed functions folder for custom meta box as it is now defined in Styles: Ridizain instead.
+
+= 1.0.22 =
+* Removed unfinished option for header slider
+
+= 1.0.21 =
+* Fixed bug on featured image right margin overflow on full width page/post
+* Adjusted in content image's pull right/left alignments
+* NEW: Added option to select category for the blog feed.
+* Added do_shortcode filter for text widget.
+* Fixed bug on invisible search form when placed in Primary Sidebar
+* Minor CSS adjustments.
+
+= 1.0.20 =
+* Fixed bug on nav bar shifting right on scroll when header image present.
+* Fixed bug on nav bar not being full width when no header image is present.
+* Fixed bug on header image not being centred on large screens.
+* Fixed bug on tagline color clash with background setting.
+
+= 1.0.19 =
+* NEW: Added option to select the post type to be used for the Featured section i.e posts, pages or a custom post type.
+* Increased header image size to 3200 to account for large screen monitors.
+* Fixed bug on header alignment for large screens.
+* minor adjustments.
+
+= 1.0.18 =
+* Updated Genericons to 3.0.3
+* Added Skype to Social menus
+* Minor Code and CSS adjustments.
+* Fixed minor bugs on menu color schemes.
+
+= 1.0.17 =
+* Fixed bug on Read More button not redirecting to single post view correctly.
+* Adjust logo alt text output so as not to be echoed out when logo image is missing in the media library.
+* Wrapped logo in h1 instead of span container.
+
+= 1.0.16 =
+* Readjusted the fix for the Read More translation issue. Props: Jose - http://wordpress.org/support/topic/translating-ridizain?replies=6
+* Regenerated .pot file with above fix.
+
+== 1.0.15 ==
+* NEW: Added Social Custom Menu to left sidebar
+* Minor code/css adjustments
+
+= 1.0.14 =
+* Fixed bug that caused pages and posts to be pulled up and cut off when featured content was set to full width.
+
+= 1.0.13 =
+* NEW: Added options to set blog feed and recent post widget excerpt length.
+* NEW: Added option to add Logo Alt text
+* Removed custom-background tag from stylesheet as theme does not support backgrounds.
+* Corrected the non translatable string for the read more link in content.php, content-home.php & widgets.php
+* Corrected sanitize callback for fitvids text field sanitization
+* Updated screenshot
+
+= 1.0.12 =
+* Fixed bug on content area top margin when there's no featured content.
+* Added pause on hover effect for slider transition
+* Minor adjustments
+
+= 1.0.11 =
+* NEW: Added option to set Featured content location - default or full width.
+* NEW: Added option to switch between 3 & 4 columns for the Featured Grid layout.
+* Minor CSS adjustments.
+
+= 1.0.10 =
+* Added sanitization for checkbox select options
+* Added sanitization for slider transition radio select options
+* Removed unreadable characters from theme name 
+
+= 1.0.09 =
+* Added extra security checks to customizer code.
+* Added .pot files for easy language translations.
+
+= 1.0.08 =
+* NEW: Added option to set main feed and single post thumbnail max-height independently.
+* NEW: Added option to hide thumbnail on single post view.
+* Removed the accessibility-ready tag as theme offers options to set various elements custom color and therefore theme no longer qualifies to use the tag.
+* CSS adjustments to accommodate the various changes made to the theme. 
+
+= 1.0.07 =
+* Correction on slider implementation - default script re-implemented.
+* Removed residue functions.js from js/flexslider folder.
+
+= 1.0.06 =
+* NEW: Added option to set number of grid posts.
+* NEW: Added option to set number of slider posts.
+* NEW: Added option for slider transition - fade/slide (Uses original FlexSlider script).
+* NEW: Added option to upload a site logo to replace site title.
+
+= 1.0.05 =
+* Adjusted color css settings to avoid color clash between menu and in content links
+
+= 1.0.04 =
+* NEW: Added option to adjust slider height.
+* NEW: Added option to set slider to auto slide.
+* NEW: Added custom excerpt function to display first video as excerpt
+* Moved IE html5 support script enqueue to functions.php
+* Minor CSS adjustments
+
+= 1.0.03 =
+* Added options for better control of FitVids script.
+* Added version control for cache busting on updates.
+* Added content-home.php that was missed out in previous version.
+* Minor CSS adjustments.
+
+= 1.0.02 =
+* NEW: Added FitVids script for better video scaling on different media devices.
+* NEW: Added options to set blog feed and single post view to full width
+* CSS adjustments for better content placement.
+
+= 1.0.01 =
+* Replacing name as original had some character formats that caused errors in the SVN links output.
+
+= 1.0.0 =
+Initial Release 
