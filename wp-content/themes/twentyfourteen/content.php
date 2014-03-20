@@ -42,10 +42,21 @@
 				edit_post_link( __( 'Edit', 'twentyfourteen' ), '<span class="edit-link">', '</span>' );
 			?>
 			
-			<div class="paper-author">
-				<?php echo test_paper_author(get_the_ID()); ?>
-			</div>
-			<p class="paper-abstract">
+			<table class="paper_headers" style="border-color: transparent;">
+				<tbody>
+					<tr>
+						<td>Author:</td>
+						<td><?php echo test_paper_author(get_the_ID()); ?></td>
+					</tr>
+					<tr>
+						<td>Download:</td>
+						<td><a href="<?php echo get_paper_pdf(get_the_ID()); ?>" target="_blank">PDF</a></td>
+					</tr>	
+				</tbody>
+			</table>
+			
+			<div>Abstract:</div>
+			<p class="paper_abstract">
 				<?php echo test_paper_abstract(get_the_ID()); ?>
 			</p>
 		</div><!-- .entry-meta -->

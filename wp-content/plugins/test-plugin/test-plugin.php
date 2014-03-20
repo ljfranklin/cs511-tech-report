@@ -48,7 +48,6 @@
 	
 	function test_paper_author($postId) {
 		$paperId = get_post_meta($postId, 'paper_id', true);
-		
 		$paperDb = new wpdb("wordpress", "wp1234", "tech_papers", "localhost");
 
 		$paperAuthor = $paperDb->get_var("SELECT author FROM paper WHERE paper_id=$paperId");
@@ -77,6 +76,16 @@
         	    $filename
         	);
     }
+    
+     function get_paper_pdf($postId) {
+     	$paperId = get_post_meta($postId, 'paper_id', true);
+		$paperDb = new wpdb("wordpress", "wp1234", "tech_papers", "localhost");
+		$title = $paperDb->get_var("SELECT title FROM paper WHERE paper_id=$paperId");
+     
+	 	$pdf_path = get_paper_filename($paperId, $title);
+		$base_path = ABSPATH;
+		return "../" . substr($pdf_path, strlen($base_path));
+	}
  
 	add_action('admin_menu', 'test_admin_actions');
 ?>

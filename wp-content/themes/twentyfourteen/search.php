@@ -14,8 +14,8 @@ function getPaperSearchResults($queryTerm) {
 	$paperDb = new wpdb("wordpress", "wp1234", "tech_papers", "localhost");
 
 	$paperIds = $paperDb->get_col("SELECT paper_id FROM paper WHERE author LIKE '%$queryTerm%'");
-	if ($paperIds == NULL) {	
-		return "Can't find paper with term=$queryTerm";
+	if ($paperIds == NULL) {
+		return new WP_Query();
 	}
 	
 	$args = array (
