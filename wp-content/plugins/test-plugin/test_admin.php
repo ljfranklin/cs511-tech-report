@@ -6,9 +6,14 @@
 	
 	ob_start();
 
-    if(isset($_POST['test_hidden']) && $_POST['test_hidden'] == 'Y') {
-    	
-    	add_new_paper();
+    if(isset($_POST['action']) && $_POST['action'] == 'create') {
+    	$postId = add_new_paper();
+		
+		wp_redirect(get_site_url()."/?p=$postId");
+		exit;
+    } 
+    if(isset($_POST['action']) && $_POST['action'] == 'edit') {
+    	$postId = update_paper();
 		
 		wp_redirect(get_site_url()."/?p=$postId");
 		exit;
@@ -25,7 +30,7 @@
 		$query = "SELECT * FROM paper WHERE paper_id=$paper_id";
 		
 		$existing_values = $paperDb->get_row($query, ARRAY_A);
-		echo $existing_values['title'];
+		
 		$pdf_path = get_paper_filename($paper_id, $existing_values['title']);
 		$base_path = ABSPATH;
 		$existing_values['filename'] = "../" . substr($pdf_path, strlen($base_path));
@@ -73,6 +78,56 @@
 		add_post_meta($postId, 'paper_id', $paperId);
 		
 		process_file_upload($paperId, $title);
+		
+		return $postId;
+    }
+    
+    function update_paper() {
+	    global $wpdb;
+    	$paperDb = new wpdb("wordpress", "wp1234", "tech_papers", "localhost");
+    	
+    	$paper_id = $_POST['paper_id'];
+        $title = $_POST['paper_title'];
+        $author = $_POST['paper_author'];
+        $abstract = $_POST['paper_abstract'];
+        
+        $paperDb->update( 
+			'paper', 
+			array( 
+				'title' => $title,
+				'author' => $author
+			), 
+			array(
+				'paper_id' => $paper_id
+			),
+			array( 
+				'%s',
+				'%s'
+			),
+			array(
+				'%d'
+			)
+		);
+
+		$query = "SELECT wposts.ID
+			FROM ".$wpdb->posts." AS wposts
+			INNER JOIN ".$wpdb->postmeta." AS wpostmeta
+			ON wpostmeta.post_id = wposts.ID
+			AND wpostmeta.meta_key = 'paper_id'
+			AND wpostmeta.meta_value = '$paper_id'";
+		
+		$post_id = $wpdb->get_var($query);
+		
+		$updatedPost = array(
+			'post_title' => $title,
+			'ID' => $post_id
+		);
+		$postId = wp_update_post($updatedPost);
+		
+		//TODO: handle deleting/renaming pdf files
+		process_file_upload($paper_id, $title);
+		
+		return $postId;
     }
     
     function process_file_upload($paper_id, $title) {
@@ -101,7 +156,10 @@
 <div class="wrap">
 	<h2>Upload a Research Paper</h2>
 	<form id="paper-upload-form" method="post" action="<?php echo $_SERVER['REQUEST_URI'] ?>&noheader=true" enctype="multipart/form-data">
-		<input type="hidden" name="test_hidden" value="Y"/>
+		<input type="hidden" name="action" value="<?php echo $is_editing ? 'edit' : 'create' ?>"/>
+		<?php if ($is_editing) { ?>
+			<input type="hidden" name="paper_id" value="<?php echo $get_existing_value('paper_id') ?>"/>
+		<?php } ?>
 		<table class="form-table">
 			<tbody>
 				<tr>
