@@ -23,9 +23,9 @@ class TechReport {
 	}
 
 	public static function test_admin_actions() {
- 		add_menu_page("Research Papers", "Research Papers", 1, "list-papers", array("TechReport", "test_admin_list"));
- 		add_submenu_page("list-papers", "All Papers", "All Papers", 1, "list-papers", array("TechReport", "test_admin_list"));
- 		add_submenu_page("list-papers", "New Paper", "Add Paper", 1, "upload-paper", array("TechReport", "test_admin"));
+ 		add_menu_page("Research Papers", "Research Papers", "edit_posts", "list-papers", array("TechReport", "test_admin_list"));
+ 		add_submenu_page("list-papers", "All Papers", "All Papers", "edit_posts", "list-papers", array("TechReport", "test_admin_list"));
+ 		add_submenu_page("list-papers", "New Paper", "Add Paper", "edit_posts", "upload-paper", array("TechReport", "test_admin"));
 	}
 	
 	public function get_paper_for_post($post_id) {
