@@ -14,6 +14,11 @@
 <?php tha_entry_top(); ?>
 	<?php ridizain_post_thumbnail(); ?>
 
+	<?php 
+		$tech_report = new TechReport();
+		$paper = $tech_report->get_paper_for_post(get_the_ID());	
+	?>
+
 	<header class="entry-header">
 		<?php if ( is_single() ) :
 				the_title( '<h1 class="entry-title">', '</h1>' );
@@ -26,11 +31,11 @@
 			<tbody>
 				<tr>
 					<td>Author:</td>
-					<td><?php echo test_paper_author(get_the_ID()); ?></td>
+					<td><?php echo $paper['author']; ?></td>
 				</tr>
 				<tr>
 					<td>Download:</td>
-					<td><a href="<?php echo get_paper_pdf(get_the_ID()); ?>" target="_blank">PDF</a></td>
+					<td><a href="<?php echo $paper['file']; ?>" target="_blank">PDF</a></td>
 				</tr>	
 			</tbody>
 		</table>
@@ -48,7 +53,7 @@
 	<div class="entry-content">
 		<div>Abstract:</div>
 		<p class="paper_abstract">
-			<?php echo test_paper_abstract(get_the_ID()); ?>
+			<?php echo $paper['abstract']; ?>
 		</p>
 		<?php
 			the_content( __( 'Continue reading <span class="meta-nav">&rarr;</span>', 'ridizain' ) );

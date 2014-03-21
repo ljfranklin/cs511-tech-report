@@ -12,7 +12,10 @@ get_header(); ?>
 	<section id="primary" class="content-area">
 		<div id="content" class="site-content" role="main">
 
-			<?php $search_results = getPaperSearchResults(get_search_query()); ?>
+			<?php 
+				$tech_report = new TechReport();
+				$search_results = $tech_report->get_search_results(get_search_query()); 
+			?>
 
 			<?php if ( $search_results->have_posts() ) : ?>
 

@@ -11,3 +11,7 @@
 .paper_main_data td {
 	border-style: none;
 }
+
+.read-more.button {
+	margin: 0;
+}

@@ -1,177 +1,53 @@
 <?php
-	error_reporting(E_ALL);
-	ini_set('display_errors', 1);
 	
-	if ( ! function_exists( 'wp_handle_upload' ) ) require_once( ABSPATH . 'wp-admin/includes/file.php' );
-	
-	ob_start();
+	//ob_start();
+
+	$tech_report = new TechReport();
 
     if(isset($_POST['action']) && $_POST['action'] == 'create') {
-    	$postId = add_new_paper();
-		
-		wp_redirect(get_site_url()."/?p=$postId");
+    	
+    	$values = array(
+    		'title' => $_POST['paper_title'],
+    		'author' => $_POST['paper_author'],
+    		'abstract' => $_POST['paper_abstract'],
+    		'file' => $_FILES['paper_upload']
+    	);	
+    	$post_id = $tech_report->add_new_paper($values);
+	
+		wp_redirect(get_site_url()."/?p=$post_id");
 		exit;
     } 
     if(isset($_POST['action']) && $_POST['action'] == 'edit') {
-    	$postId = update_paper();
+    	$values = array(
+    		'paper_id' => $_POST['paper_id'],
+    		'title' => $_POST['paper_title'],
+    		'author' => $_POST['paper_author'],
+    		'abstract' => $_POST['paper_abstract'],
+    		'file' => $_FILES['paper_upload']
+    	);
+    	$post_id = $tech_report->update_paper($values, $_POST['previous_title']);
 		
-		wp_redirect(get_site_url()."/?p=$postId");
+		wp_redirect(get_site_url()."/?p=$post_id");
 		exit;
     }
     
-    $is_editing = false;
-    $existing_values = array();
-    if (isset($_GET['paper_id']) && (isset($_GET['action']) && $_GET['action'] == 'edit')){
-    	$paper_id = $_GET['paper_id'];
-    	$is_editing = true;
-    	
-    	$paperDb = new wpdb("wordpress", "wp1234", "tech_papers", "localhost");
-		$query = "SELECT * FROM paper WHERE paper_id=$paper_id";
-		
-		$existing_values = $paperDb->get_row($query, ARRAY_A);
-		
-		$pdf_path = get_paper_filename($paper_id, $existing_values['title']);
-		$base_path = ABSPATH;
-		$existing_values['filename'] = "../" . substr($pdf_path, strlen($base_path));
-    }
-    
-    $get_existing_value = function($name) use ($existing_values) {
-    	if (array_key_exists($name, $existing_values)) {
-    		return $existing_values[$name];
+	if (isset($_GET['paper_id']) && (isset($_GET['action']) && $_GET['action'] == 'edit')) {
+		$paper = $tech_report->get_paper($_GET['paper_id']);
+		$is_editing = true;
+	} else {
+		$paper = array();
+		$is_editing = false;
+	}
+	
+	$get_existing_value = function($name) use ($paper) {
+    	if (array_key_exists($name, $paper)) {
+    		return $paper[$name];
     	} else {
     		return "";
     	}
     };
-    
-    function add_new_paper() {
-    	$paperDb = new wpdb("wordpress", "wp1234", "tech_papers", "localhost");
-    	
-        $title = $_POST['paper_title'];
-        $author = $_POST['paper_author'];
-        $abstract = $_POST['paper_abstract'];
-        
-        $paperDb->insert( 
-			'paper', 
-			array( 
-				'title' => $title,
-				'author' => $author,
-				'abstract' => $abstract
-			), 
-			array( 
-				'%s',
-				'%s',
-				'%s'
-			) 
-		);
-		$paperId = $paperDb->insert_id;
-		
-		$userId = get_current_user_id();
-		$newPost = array(
-			'post_title' => $title,
-			'post_content' => '',
-			'post_status' => 'publish',
-			'post_date' => date('Y-m-d H:i:s'),
-			'post_author' => $userId,
-			'post_type' => 'post',
-			'post_category' => array(0)
-		);
-		$postId = wp_insert_post($newPost);
-		add_post_meta($postId, 'paper_id', $paperId);
-		
-		process_file_upload($paperId, $title);
-		
-		return $postId;
-    }
-    
-    function update_paper($existing_values) {
-	    global $wpdb;
-    	$paperDb = new wpdb("wordpress", "wp1234", "tech_papers", "localhost");
-    	
-    	$paper_id = $_POST['paper_id'];
-        $title = $_POST['paper_title'];
-        $author = $_POST['paper_author'];
-        $abstract = $_POST['paper_abstract'];
-        
-        $paperDb->update( 
-			'paper', 
-			array( 
-				'title' => $title,
-				'author' => $author,
-				'abstract' => $abstract
-			), 
-			array(
-				'paper_id' => $paper_id
-			),
-			array( 
-				'%s',
-				'%s',
-				'%s'
-			),
-			array(
-				'%d'
-			)
-		);
-
-		$query = "SELECT wposts.ID
-			FROM ".$wpdb->posts." AS wposts
-			INNER JOIN ".$wpdb->postmeta." AS wpostmeta
-			ON wpostmeta.post_id = wposts.ID
-			AND wpostmeta.meta_key = 'paper_id'
-			AND wpostmeta.meta_value = '$paper_id'";
-		
-		$post_id = $wpdb->get_var($query);
-		
-		$updatedPost = array(
-			'post_title' => $title,
-			'ID' => $post_id
-		);
-		$postId = wp_update_post($updatedPost);
-		
-		if (empty($_FILES['paper_upload']['tmp_name']) === false) {
-			process_file_upload($paper_id, $title);
-		}
-		
-		$old_title = $_POST['previous_title'];
-		if (empty($_FILES['paper_upload']['tmp_name']) && $old_title !== $title) {
-    		rename_old_file($paper_id, $old_title, $title);
-    	} else if ($old_title !== $title) {
-			delete_old_file($paper_id, $old_title);
-		} 
-		
-		return $postId;
-    }
-    
-    function process_file_upload($paper_id, $title) {
-    
-    	$uploadedfile = $_FILES['paper_upload'];
-    	$finfo = new finfo(FILEINFO_MIME_TYPE);
-    	if (false === array_search(
-    	    $finfo->file($uploadedfile['tmp_name']),
-    	    array(
-    	        'pdf' => 'application/pdf'
-    	    ),
-    	    true
-    	)) {
-        	throw new RuntimeException('Invalid file format.');
-    	}
-    	
-    	
-		if (!move_uploaded_file(
-        	$_FILES['paper_upload']['tmp_name'],
-        	get_paper_filename($paper_id, $title)
-    	)) {
-    	    throw new RuntimeException('Failed to move uploaded file.');
-    	}
-    }
-    
-    function delete_old_file($paper_id, $old_title) {
-    	unlink(get_paper_filename($paper_id, $old_title));
-    }
-    
-    function rename_old_file($paper_id, $old_title, $new_title) {
-    	rename(get_paper_filename($paper_id, $old_title), get_paper_filename($paper_id, $new_title));
-    }
 ?>
+
 <div class="wrap">
 	<h2>Upload a Research Paper</h2>
 	<form id="paper-upload-form" method="post" action="<?php echo $_SERVER['REQUEST_URI'] ?>&noheader=true" enctype="multipart/form-data">
@@ -212,7 +88,7 @@
 					</th>
 					<td>
 						<?php if ($is_editing) { ?>
-							<a href="<?php echo $get_existing_value('filename') ?>" target="_blank">Existing PDF</a><br/>
+							<a href="<?php echo $get_existing_value('file') ?>" target="_blank">Existing PDF</a><br/>
 							Replace File:
 						<?php } ?>
 						<input type="file" name="paper_upload" id="paper_upload" accept="application/pdf" <?php if ($is_editing == false) echo "required" ?>/>

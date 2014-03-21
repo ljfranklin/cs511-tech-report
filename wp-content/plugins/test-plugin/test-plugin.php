@@ -1,68 +1,56 @@
 <?php
 /**
- * Plugin Name: Test Plugin
- * Description: Just a test
+ * Plugin Name: Technical Reports Plugin
+ * Description: A plugin to enable saving and displaying of research papers 
  */
-	function getPaperTitle($paperId) {
-		$paperDb = new wpdb("wordpress", "wp1234", "tech_papers", "localhost");
+ error_reporting(E_ALL);
+ini_set('display_errors', 1);
+class TechReport {
 
-		$paperTitle = $paperDb->get_var("SELECT title FROM paper WHERE paper_id=$paperId");
-		if ($paperTitle == NULL) {	
-			return "Can't find paper with id=$paperId";
-		}
+	private $paper_db;
+	private $paper_values = NULL;
 
-		return $paperTitle;
+	function __construct($paper_id=NULL) {
+		$this->paper_db = new wpdb("wordpress", "wp1234", "tech_papers", "localhost");
 	}
 
-	function test_admin() {
+	public static function test_admin() {
     	include('test_admin.php');
 	}
 	
-	function test_admin_list() {
+	public static function test_admin_list() {
 		include('test_admin_list.php');	
 	}
 
-	function test_admin_actions() {
- 		add_menu_page("Research Papers", "Research Papers", 1, "list-papers", "test_admin_list");
- 		add_submenu_page("list-papers", "All Papers", "All Papers", 1, "list-papers", "test_admin_list");
- 		add_submenu_page("list-papers", "New Paper", "Add Paper", 1, "upload-paper", "test_admin");
+	public static function test_admin_actions() {
+ 		add_menu_page("Research Papers", "Research Papers", 1, "list-papers", array("TechReport", "test_admin_list"));
+ 		add_submenu_page("list-papers", "All Papers", "All Papers", 1, "list-papers", array("TechReport", "test_admin_list"));
+ 		add_submenu_page("list-papers", "New Paper", "Add Paper", 1, "upload-paper", array("TechReport", "test_admin"));
 	}
 	
-	function test_get_metadata($postId) {
-		$paperId = get_post_meta($postId, 'paper_id', true);
-		echo getPaperTitle($paperId);
-	}
-	
-	function test_paper_abstract($postId) {
-		$paperId = get_post_meta($postId, 'paper_id', true);
-		
-		$paperDb = new wpdb("wordpress", "wp1234", "tech_papers", "localhost");
-
-		$paperAbstract = $paperDb->get_var("SELECT abstract FROM paper WHERE paper_id=$paperId");
-		if ($paperAbstract == NULL) {	
-			return "Can't find paper with id=$paperId";
+	public function get_paper_for_post($post_id) {
+		$paper_id = get_post_meta($post_id, 'paper_id', true);
+		$paper = $this->paper_db->get_row("SELECT * FROM paper WHERE paper_id=$paper_id", ARRAY_A);
+		if ($paper == NULL) {	
+			return array();
 		}
-
-		return $paperAbstract;
+		$paper['file'] = $this->get_paper_url($paper);
+		return $paper;
 	}
 	
-	function test_paper_author($postId) {
-		$paperId = get_post_meta($postId, 'paper_id', true);
-		$paperDb = new wpdb("wordpress", "wp1234", "tech_papers", "localhost");
-
-		$paperAuthor = $paperDb->get_var("SELECT author FROM paper WHERE paper_id=$paperId");
-		if ($paperAuthor == NULL) {	
-			return "Can't find paper with id=$paperId";
+	public function get_paper($paper_id) {
+		$paper = $this->paper_db->get_row("SELECT * FROM paper WHERE paper_id=$paper_id", ARRAY_A);
+		if ($paper == NULL) {	
+			return array();
 		}
-
-		return $paperAuthor;
+		$paper['file'] = $this->get_paper_url($paper);
+		return $paper;
 	}
 	
-	function get_paper_filename($paper_id, $title=NULL) {
+	private function get_paper_filename($paper_id, $title=NULL) {
 	
 		if (is_null($title)) {
-			$paperDb = new wpdb("wordpress", "wp1234", "tech_papers", "localhost");
-			$title = $paperDb->get_var("SELECT title FROM paper WHERE paper_id=$paper_id");
+			$title = $this->paper_db->get_var("SELECT title FROM paper WHERE paper_id=$paper_id");
 		}
 	
     	$plugin_dir = plugin_dir_path( __FILE__ );
@@ -77,21 +65,15 @@
         	);
     }
     
-     function get_paper_pdf($postId) {
-     	$paperId = get_post_meta($postId, 'paper_id', true);
-		$paperDb = new wpdb("wordpress", "wp1234", "tech_papers", "localhost");
-		$title = $paperDb->get_var("SELECT title FROM paper WHERE paper_id=$paperId");
-     
-	 	$pdf_path = get_paper_filename($paperId, $title);
+    private function get_paper_url($paper) {
+	 	$pdf_path = $this->get_paper_filename($paper['paper_id'], $paper['title']);
 		$base_path = ABSPATH;
 		return "../" . substr($pdf_path, strlen($base_path));
 	}
 	
-	function getPaperSearchResults($queryTerm) {
-		$paperDb = new wpdb("wordpress", "wp1234", "tech_papers", "localhost");
-	
-		$paperIds = $paperDb->get_col("SELECT paper_id FROM paper WHERE author LIKE '%$queryTerm%' OR title LIKE '%$queryTerm%' OR abstract LIKE '%$queryTerm%'");
-		if ($paperIds == NULL) {
+	function get_search_results($query_term) {
+		$paper_ids = $this->paper_db->get_col("SELECT paper_id FROM paper WHERE author LIKE '%$query_term%' OR title LIKE '%$query_term%' OR abstract LIKE '%$query_term%'");
+		if ($paper_ids == NULL) {
 			return new WP_Query();
 		}
 		
@@ -99,7 +81,7 @@
 			'meta_query' => array(
 	       		array(
 	           		'key' => 'paper_id',
-	           		'value' => $paperIds,
+	           		'value' => $paper_ids,
 	           		'compare' => 'IN',
 	       		)
 	   		)
@@ -109,6 +91,169 @@
 		
 		return $search_query;
 	}
- 
-	add_action('admin_menu', 'test_admin_actions');
+	
+	public function delete_paper($paper_id) {
+		global $wpdb;
+
+		$query = "SELECT wposts.ID
+			FROM ".$wpdb->posts." AS wposts
+			INNER JOIN ".$wpdb->postmeta." AS wpostmeta
+			ON wpostmeta.post_id = wposts.ID
+			AND wpostmeta.meta_key = 'paper_id'
+			AND wpostmeta.meta_value = '$paper_id'";
+		
+		$post_id = $wpdb->get_var($query);
+		wp_delete_post($post_id, true);
+		
+		unlink($this->get_paper_filename($paper_id));
+		$this->paper_db->delete( 'paper', array( 'paper_id' => $paper_id ));	
+	}
+
+	public function delete_multiple_papers($paper_ids) {
+		global $wpdb;
+	
+		$id_string = "'" . implode("','", $paper_ids) . "'";
+		$query = "SELECT wposts.ID
+			FROM ".$wpdb->posts." AS wposts
+			INNER JOIN ".$wpdb->postmeta." AS wpostmeta
+			ON wpostmeta.post_id = wposts.ID
+			AND wpostmeta.meta_key = 'paper_id'
+			AND wpostmeta.meta_value IN ($id_string)";
+		
+		$post_ids = $wpdb->get_col($query);
+		foreach ($post_ids as $post_id) {
+			wp_delete_post($post_id, true);
+		}	
+		
+		foreach ($paper_ids as $paper_id){
+			unlink($this->get_paper_filename($paper_id));
+			$this->paper_db->delete( 'paper', array( 'paper_id' => $paper_id ));	
+		}
+	}
+	
+	public function get_all_papers() {
+		$query = "SELECT * FROM paper";
+		return $this->paper_db->get_results($query);
+	}
+	
+	public function add_new_paper($values) {
+       
+        $this->paper_db->insert( 
+			'paper', 
+			array( 
+				'title' => $values['title'],
+				'author' => $values['author'],
+				'abstract' => $values['abstract']
+			), 
+			array( 
+				'%s',
+				'%s',
+				'%s'
+			) 
+		);
+		$paper_id = $this->paper_db->insert_id;
+		
+		$user_id = get_current_user_id();
+		$new_post = array(
+			'post_title' => $values['title'],
+			'post_content' => '',
+			'post_status' => 'publish',
+			'post_date' => date('Y-m-d H:i:s'),
+			'post_author' => $user_id,
+			'post_type' => 'post',
+			'post_category' => array(0)
+		);
+		$post_id = wp_insert_post($new_post);
+		add_post_meta($post_id, 'paper_id', $paper_id);
+		
+		$this->process_file_upload($paper_id, $values['title'], $values['file']);
+		
+		return $post_id;
+    }
+    
+    private function process_file_upload($paper_id, $title, $file) {
+    
+    	$finfo = new finfo(FILEINFO_MIME_TYPE);
+    	if (false === array_search(
+    	    $finfo->file($file['tmp_name']),
+    	    array(
+    	        'pdf' => 'application/pdf'
+    	    ),
+    	    true
+    	)) {
+        	throw new RuntimeException('Invalid file format.');
+    	}
+    	
+		if (!move_uploaded_file(
+        	$file['tmp_name'],
+        	$this->get_paper_filename($paper_id, $title)
+    	)) {
+    	    throw new RuntimeException('Failed to move uploaded file.');
+    	}
+    }
+    
+    private function delete_old_file($paper_id, $old_title) {
+    	unlink($this->get_paper_filename($paper_id, $old_title));
+    }
+    
+    private function rename_old_file($paper_id, $old_title, $new_title) {
+    	rename($this->get_paper_filename($paper_id, $old_title), $this->get_paper_filename($paper_id, $new_title));
+    }
+    
+    public function update_paper($new_values, $old_title) {
+	    global $wpdb;
+        
+        $paper_id = $new_values['paper_id'];
+        $title = $new_values['title'];
+        $this->paper_db->update( 
+			'paper', 
+			array( 
+				'title' => $title,
+				'author' => $new_values['author'],
+				'abstract' => $new_values['abstract']
+			), 
+			array(
+				'paper_id' => $paper_id
+			),
+			array( 
+				'%s',
+				'%s',
+				'%s'
+			),
+			array(
+				'%d'
+			)
+		);
+
+		$query = "SELECT wposts.ID
+			FROM ".$wpdb->posts." AS wposts
+			INNER JOIN ".$wpdb->postmeta." AS wpostmeta
+			ON wpostmeta.post_id = wposts.ID
+			AND wpostmeta.meta_key = 'paper_id'
+			AND wpostmeta.meta_value = '$paper_id'";
+		
+		$post_id = $wpdb->get_var($query);
+		
+		$updatedPost = array(
+			'post_title' => $title,
+			'ID' => $post_id
+		);
+		wp_update_post($updatedPost);
+		
+		if (empty($new_values['file']['tmp_name']) === false) {
+			$this->process_file_upload($paper_id, $title, $new_values['file']);
+		}
+		
+		if (empty($new_values['file']['tmp_name']) && $old_title !== $title) {
+    		$this->rename_old_file($paper_id, $old_title, $title);
+    	} else if ($old_title !== $title) {
+			$this->delete_old_file($paper_id, $old_title);
+		} 
+		
+		return $post_id;
+    }
+}
+
+add_action('admin_menu', array('TechReport','test_admin_actions'));
+
 ?>

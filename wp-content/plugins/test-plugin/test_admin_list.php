@@ -4,55 +4,15 @@ if(!class_exists('WP_List_Table_Copy')){
 	require_once( plugin_dir_path( __FILE__ ) . 'includes/class-wp-list-table-copy.php' );
 }
 
+$tech_report = new TechReport();
 if (isset($_GET['action']) && $_GET['action'] == 'delete') {
 	$paper_id = $_GET['paper_id'];
-	delete_paper($paper_id);
+	$tech_report->delete_paper($paper_id);
 }
 
 if (isset($_POST['action']) && $_POST['action'] == 'delete') {
 	$paper_ids = $_POST['paper_id'];
-	delete_multiple_papers($paper_ids);
-}
-
-function delete_paper($paper_id) {
-	global $wpdb;
-
-	$query = "SELECT wposts.ID
-		FROM ".$wpdb->posts." AS wposts
-		INNER JOIN ".$wpdb->postmeta." AS wpostmeta
-		ON wpostmeta.post_id = wposts.ID
-		AND wpostmeta.meta_key = 'paper_id'
-		AND wpostmeta.meta_value = '$paper_id'";
-		
-	$post_id = $wpdb->get_var($query);
-	wp_delete_post($post_id, true);
-	
-	unlink(get_paper_filename($paper_id));
-	$paperDb = new wpdb("wordpress", "wp1234", "tech_papers", "localhost");
-	$paperDb->delete( 'paper', array( 'paper_id' => $paper_id ));	
-}
-
-function delete_multiple_papers($paper_ids) {
-	global $wpdb;
-
-	$id_string = "'" . implode("','", $paper_ids) . "'";
-	$query = "SELECT wposts.ID
-		FROM ".$wpdb->posts." AS wposts
-		INNER JOIN ".$wpdb->postmeta." AS wpostmeta
-		ON wpostmeta.post_id = wposts.ID
-		AND wpostmeta.meta_key = 'paper_id'
-		AND wpostmeta.meta_value IN ($id_string)";
-		
-	$post_ids = $wpdb->get_col($query);
-	foreach ($post_ids as $post_id) {
-		wp_delete_post($post_id, true);
-	}	
-	
-	$paperDb = new wpdb("wordpress", "wp1234", "tech_papers", "localhost");
-	foreach ($paper_ids as $paper_id){
-		unlink(get_paper_filename($paper_id));
-		$paperDb->delete( 'paper', array( 'paper_id' => $paper_id ));	
-	}
+	$tech_report->delete_multiple_papers($paper_ids);
 }
 
 class Link_List_Table extends WP_List_Table {
@@ -63,10 +23,10 @@ class Link_List_Table extends WP_List_Table {
 	 */
 	 function __construct() {
 		 parent::__construct( array(
-		'singular'=> 'wp_list_text_link', //Singular label
-		'plural' => 'wp_list_test_links', //plural label, also this well be one of the table css class
-		'ajax'	=> false //We won't support Ajax for this table
-		) );
+			'singular'=> 'wp_list_paper',
+			'plural' => 'wp_list_papers',
+			'ajax'	=> false
+		));
 	 }
 
 	function get_columns() {
@@ -84,16 +44,13 @@ class Link_List_Table extends WP_List_Table {
 	}
 	
 	function prepare_items() {
-	
-		$paperDb = new wpdb("wordpress", "wp1234", "tech_papers", "localhost");
-		$query = "SELECT * FROM paper";
-		
 		$columns = $this->get_columns();
 		$hidden = $this->get_hidden_columns();
   		$sortable = array();
   		$this->_column_headers = array($columns, $hidden, $sortable);
 
-		$this->items = $paperDb->get_results($query);
+		$tech_report = new TechReport();
+		$this->items = $tech_report->get_all_papers();
 	}
 	
 	function column_default( $item, $column_name ) {
@@ -102,7 +59,7 @@ class Link_List_Table extends WP_List_Table {
     		case 'author':
     			return $item->$column_name;
     		default:
-    	 		return print_r( $item, true ) ; //Show the whole array for troubleshooting purposes
+    	 		return print_r( $item, true ); 
   		}
 	}
 	
