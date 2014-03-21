@@ -29,7 +29,9 @@ class Paper_List_Table extends WP_List_Table {
 		return array(
 			'cb' => '<input type="checkbox" />',
 			'title'=>'Title',
-			'author'=>'Author'
+			'author'=>'Author',
+			'type' => 'Type',
+			'publication_year' => 'Year'
 		);
 	}
 	
@@ -53,6 +55,8 @@ class Paper_List_Table extends WP_List_Table {
   		switch( $column_name ) { 
     		case 'paper_id':
     		case 'author':
+    		case 'type':
+    		case 'publication_year':
     			return $item->$column_name;
     		default:
     	 		return print_r( $item, true ); 

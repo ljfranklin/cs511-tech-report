@@ -8,6 +8,8 @@
     		'title' => $_POST['paper_title'],
     		'author' => $_POST['paper_author'],
     		'abstract' => $_POST['paper_abstract'],
+    		'year' => $_POST['paper_year'],
+    		'type' => $_POST['paper_type'],
     		'file' => $_FILES['paper_upload']
     	);	
     	$post_id = $tech_report->add_new_paper($values);
@@ -21,6 +23,8 @@
     		'title' => $_POST['paper_title'],
     		'author' => $_POST['paper_author'],
     		'abstract' => $_POST['paper_abstract'],
+    		'year' => $_POST['paper_year'],
+    		'type' => $_POST['paper_type'],
     		'file' => $_FILES['paper_upload']
     	);
     	$post_id = $tech_report->update_paper($values, $_POST['previous_title']);
@@ -70,6 +74,27 @@
 					</th>
 					<td>
 						<input type="text" id="paper_author" name="paper_author" size="30" value="<?php echo $get_existing_value('author') ?>" required/>
+					</td>
+				</tr>
+				<tr>
+					<th>
+						<label for="paper_year">Publication Year (YYYY):</label>
+					</th>
+					<td>
+						<input type="text" id="paper_year" name="paper_year" size="4" value="<?php echo $get_existing_value('publication_year') ?>" pattern="\d{4}" required/>
+					</td>
+				</tr>
+				<tr>
+					<th>
+						<label for="paper_type">Type:</label>
+					</th>
+					<td>
+						<select id="paper_type" name="paper_type" required>
+							<option value="tech-report" <?php if ($get_existing_value('type') === "tech-report") echo "selected=\"selected\"" ?>>Technical Report</option>
+							<option value="journal" <?php if ($get_existing_value('type') === "journal") echo "selected=\"selected\"" ?>>Journal Publication</option>
+							<option value="conference" <?php if ($get_existing_value('type') === "conference") echo "selected=\"selected\"" ?>>Conference Publication</option>
+							<option value="phd" <?php if ($get_existing_value('type') === "phd") echo "selected=\"selected\"" ?>>PhD Dissertation</option>
+						</select>
 					</td>
 				</tr>
 				<tr>

@@ -35,6 +35,14 @@
 					<td><?php echo $paper['author']; ?></td>
 				</tr>
 				<tr>
+					<td>Publication Year:</td>
+					<td><?php echo $paper['publication_year']; ?></td>
+				</tr>
+				<tr>
+					<td>Type:</td>
+					<td><?php echo $paper['type']; ?></td>
+				</tr>
+				<tr>
 					<td>Download:</td>
 					<td><a href="<?php echo $paper['file']; ?>" target="_blank">PDF</a></td>
 				</tr>	

@@ -13,6 +13,23 @@ class TechReports {
 		$this->paper_db = new wpdb("wordpress", "wp1234", "tech_papers", "localhost");
 	}
 
+	public static function create_plugin_table() {
+		$paper_db = new wpdb("wordpress", "wp1234", "tech_papers", "localhost");
+		if($paper_db->get_var("SHOW TABLES LIKE 'paper'") !== 'paper') 
+		{
+			$sql = "CREATE TABLE paper (
+				paper_id INT NOT NULL AUTO_INCREMENT, 
+				title VARCHAR(100) NOT NULL, 
+				author VARCHAR(40) NOT NULL, 
+				abstract TEXT NOT NULL,
+				publication_year YEAR NOT NULL,
+				type VARCHAR(40) NOT NULL,
+				PRIMARY KEY (paper_id)
+				);";
+			$paper_db->query($sql);
+		}
+	}
+
 	public static function tech_reports_admin_edit() {
     	include('tech_reports_admin_edit.php');
 	}
@@ -142,12 +159,16 @@ class TechReports {
 			array( 
 				'title' => $values['title'],
 				'author' => $values['author'],
-				'abstract' => $values['abstract']
+				'abstract' => $values['abstract'],
+				'type' => $values['type'],
+				'publication_year' => $values['year']
 			), 
 			array( 
 				'%s',
 				'%s',
-				'%s'
+				'%s',
+				'%s',
+				'%d'
 			) 
 		);
 		$paper_id = $this->paper_db->insert_id;
@@ -209,7 +230,9 @@ class TechReports {
 			array( 
 				'title' => $title,
 				'author' => $new_values['author'],
-				'abstract' => $new_values['abstract']
+				'abstract' => $new_values['abstract'],
+				'type' => $new_values['type'],
+				'publication_year' => $new_values['year']
 			), 
 			array(
 				'paper_id' => $paper_id
@@ -217,7 +240,9 @@ class TechReports {
 			array( 
 				'%s',
 				'%s',
-				'%s'
+				'%s',
+				'%s',
+				'%d'
 			),
 			array(
 				'%d'
@@ -252,6 +277,8 @@ class TechReports {
 		return $post_id;
     }
 }
+
+register_activation_hook( __FILE__, array('TechReports','create_plugin_table'));
 
 add_action('admin_menu', array('TechReports','tech_reports_admin_actions'));
 
