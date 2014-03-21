@@ -4,7 +4,7 @@ if(!class_exists('WP_List_Table_Copy')){
 	require_once( plugin_dir_path( __FILE__ ) . 'includes/class-wp-list-table-copy.php' );
 }
 
-$tech_report = new TechReport();
+$tech_report = new TechReports();
 if (isset($_GET['action']) && $_GET['action'] == 'delete') {
 	$paper_id = $_GET['paper_id'];
 	$tech_report->delete_paper($paper_id);
@@ -15,12 +15,8 @@ if (isset($_POST['action']) && $_POST['action'] == 'delete') {
 	$tech_report->delete_multiple_papers($paper_ids);
 }
 
-class Link_List_Table extends WP_List_Table {
+class Paper_List_Table extends WP_List_Table {
 
-	/**
-	 * Constructor, we override the parent to pass our own arguments
-	 * We usually focus on three parameters: singular and plural labels, as well as whether the class supports AJAX.
-	 */
 	 function __construct() {
 		 parent::__construct( array(
 			'singular'=> 'wp_list_paper',
@@ -49,7 +45,7 @@ class Link_List_Table extends WP_List_Table {
   		$sortable = array();
   		$this->_column_headers = array($columns, $hidden, $sortable);
 
-		$tech_report = new TechReport();
+		$tech_report = new TechReports();
 		$this->items = $tech_report->get_all_papers();
 	}
 	
@@ -86,8 +82,8 @@ class Link_List_Table extends WP_List_Table {
 	}
 }
 
-$wp_list_table = new Link_List_Table();
-$wp_list_table->prepare_items();
+$paper_table = new Paper_List_Table();
+$paper_table->prepare_items();
 ?>
 
 
@@ -95,6 +91,6 @@ $wp_list_table->prepare_items();
 <div class="wrap">
 	<h2>Research Papers</h2>
 	<form action="" method="POST">
-		<?php $wp_list_table->display(); ?>
+		<?php $paper_table->display(); ?>
 	</form>
 </div>

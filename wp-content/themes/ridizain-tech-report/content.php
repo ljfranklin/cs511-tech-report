@@ -4,6 +4,7 @@
  *
  * Used for both single and index/archive/search.
  *
+ * Adapted for use in Technical Reports child theme
  *
  * @package Ridizain
  * @since Ridizain 1.0
@@ -15,7 +16,7 @@
 	<?php ridizain_post_thumbnail(); ?>
 
 	<?php 
-		$tech_report = new TechReport();
+		$tech_report = new TechReports();
 		$paper = $tech_report->get_paper_for_post(get_the_ID());	
 	?>
 

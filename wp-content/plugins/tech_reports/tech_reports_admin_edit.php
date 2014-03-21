@@ -1,8 +1,6 @@
 <?php
-	
-	//ob_start();
 
-	$tech_report = new TechReport();
+	$tech_report = new TechReports();
 
     if(isset($_POST['action']) && $_POST['action'] == 'create') {
     	

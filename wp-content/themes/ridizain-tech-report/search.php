@@ -2,6 +2,7 @@
 /**
  * The template for displaying Search Results pages
  *
+ * Adapted for use in Technical Reports child theme
  *
  * @package Ridizain
  * @since Ridizain 1.0
@@ -13,7 +14,7 @@ get_header(); ?>
 		<div id="content" class="site-content" role="main">
 
 			<?php 
-				$tech_report = new TechReport();
+				$tech_report = new TechReports();
 				$search_results = $tech_report->get_search_results(get_search_query()); 
 			?>
 

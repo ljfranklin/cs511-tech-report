@@ -3,9 +3,8 @@
  * Plugin Name: Technical Reports Plugin
  * Description: A plugin to enable saving and displaying of research papers 
  */
- error_reporting(E_ALL);
-ini_set('display_errors', 1);
-class TechReport {
+ 
+class TechReports {
 
 	private $paper_db;
 	private $paper_values = NULL;
@@ -14,18 +13,18 @@ class TechReport {
 		$this->paper_db = new wpdb("wordpress", "wp1234", "tech_papers", "localhost");
 	}
 
-	public static function test_admin() {
-    	include('test_admin.php');
+	public static function tech_reports_admin_edit() {
+    	include('tech_reports_admin_edit.php');
 	}
 	
-	public static function test_admin_list() {
-		include('test_admin_list.php');	
+	public static function tech_reports_admin_list() {
+		include('tech_reports_admin_list.php');	
 	}
 
-	public static function test_admin_actions() {
- 		add_menu_page("Research Papers", "Research Papers", "edit_posts", "list-papers", array("TechReport", "test_admin_list"));
- 		add_submenu_page("list-papers", "All Papers", "All Papers", "edit_posts", "list-papers", array("TechReport", "test_admin_list"));
- 		add_submenu_page("list-papers", "New Paper", "Add Paper", "edit_posts", "upload-paper", array("TechReport", "test_admin"));
+	public static function tech_reports_admin_actions() {
+ 		add_menu_page("Research Papers", "Research Papers", "edit_posts", "list-papers", array("TechReports", "tech_reports_admin_list"));
+ 		add_submenu_page("list-papers", "All Papers", "All Papers", "edit_posts", "list-papers", array("TechReports", "tech_reports_admin_list"));
+ 		add_submenu_page("list-papers", "New Paper", "Add Paper", "edit_posts", "upload-paper", array("TechReports", "tech_reports_admin_edit"));
 	}
 	
 	public function get_paper_for_post($post_id) {
@@ -71,7 +70,7 @@ class TechReport {
 		return "../" . substr($pdf_path, strlen($base_path));
 	}
 	
-	function get_search_results($query_term) {
+	public function get_search_results($query_term) {
 		$paper_ids = $this->paper_db->get_col("SELECT paper_id FROM paper WHERE author LIKE '%$query_term%' OR title LIKE '%$query_term%' OR abstract LIKE '%$query_term%'");
 		if ($paper_ids == NULL) {
 			return new WP_Query();
@@ -254,6 +253,6 @@ class TechReport {
     }
 }
 
-add_action('admin_menu', array('TechReport','test_admin_actions'));
+add_action('admin_menu', array('TechReports','tech_reports_admin_actions'));
 
 ?>
