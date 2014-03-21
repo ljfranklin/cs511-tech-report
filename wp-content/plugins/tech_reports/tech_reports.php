@@ -15,11 +15,10 @@ class TechReports {
 
 	public static function create_plugin_table() {
 		$paper_db = new wpdb("wordpress", "wp1234", "tech_papers", "localhost");
-		if($paper_db->get_var("SHOW TABLES LIKE 'paper'") !== 'paper') 
-		{
+		if($paper_db->get_var("SHOW TABLES LIKE 'paper'") !== 'paper') {
 			$sql = "CREATE TABLE paper (
 				paper_id INT NOT NULL AUTO_INCREMENT, 
-				title VARCHAR(100) NOT NULL, 
+				title TEXT NOT NULL, 
 				author VARCHAR(40) NOT NULL, 
 				abstract TEXT NOT NULL,
 				publication_year YEAR NOT NULL,
