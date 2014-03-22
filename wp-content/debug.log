@@ -1,1 +1,7 @@
 [21-Mar-2014 22:47:25 UTC] WordPress database error You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near 'paper' at line 1 for query SHOW TABLES LIKE paper made by activate_plugin, do_action('activate_tech_reports/tech_reports.php'), call_user_func_array, TechReports::create_plugin_table
+[22-Mar-2014 00:25:52 UTC] PHP Fatal error:  Call to undefined function create_plugin_table() in /var/www/wp-content/plugins/tech_reports/tech_reports.php on line 17
+[22-Mar-2014 00:25:53 UTC] PHP Fatal error:  Call to undefined function create_plugin_table() in /var/www/wp-content/plugins/tech_reports/tech_reports.php on line 17
+[22-Mar-2014 00:25:53 UTC] PHP Fatal error:  Call to undefined function create_plugin_table() in /var/www/wp-content/plugins/tech_reports/tech_reports.php on line 17
+[22-Mar-2014 00:26:24 UTC] PHP Fatal error:  Using $this when not in object context in /var/www/wp-content/plugins/tech_reports/tech_reports.php on line 17
+[22-Mar-2014 00:26:24 UTC] PHP Fatal error:  Using $this when not in object context in /var/www/wp-content/plugins/tech_reports/tech_reports.php on line 17
+[22-Mar-2014 00:26:24 UTC] PHP Fatal error:  Using $this when not in object context in /var/www/wp-content/plugins/tech_reports/tech_reports.php on line 17

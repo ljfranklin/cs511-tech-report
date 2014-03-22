@@ -12,8 +12,13 @@ class TechReports {
 	function __construct($paper_id=NULL) {
 		$this->paper_db = new wpdb("wordpress", "wp1234", "tech_papers", "localhost");
 	}
+	
+	public static function plugin_setup() {
+		self::create_plugin_table();
+		self::create_upload_directory();
+	}
 
-	public static function create_plugin_table() {
+	private static function create_plugin_table() {
 		$paper_db = new wpdb("wordpress", "wp1234", "tech_papers", "localhost");
 		if($paper_db->get_var("SHOW TABLES LIKE 'paper'") !== 'paper') {
 			$sql = "CREATE TABLE paper (
@@ -26,6 +31,14 @@ class TechReports {
 				PRIMARY KEY (paper_id)
 				);";
 			$paper_db->query($sql);
+		}
+	}
+	
+	private static function create_upload_directory() {
+		$plugin_dir = plugin_dir_path( __FILE__ );
+		$upload_path = $plugin_dir . "uploads";
+		if (!file_exists($upload_path)) {
+    		mkdir($upload_path, 0775);
 		}
 	}
 
@@ -277,7 +290,7 @@ class TechReports {
     }
 }
 
-register_activation_hook( __FILE__, array('TechReports','create_plugin_table'));
+register_activation_hook( __FILE__, array('TechReports','plugin_setup'));
 
 add_action('admin_menu', array('TechReports','tech_reports_admin_actions'));
 
