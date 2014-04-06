@@ -9,8 +9,14 @@ class TechReports {
 	private $paper_db;
 	private $paper_values = NULL;
 
+	// Xiaoran
+	private $post_db;
+
 	function __construct($paper_id=NULL) {
 		$this->paper_db = new wpdb("wordpress", "wp1234", "tech_papers", "localhost");
+
+		// Xiaoran
+		$this->post_db = new wpdb("wordpress", "wp1234", "wordpress", "localhost");
 	}
 	
 	public static function plugin_setup() {
@@ -48,6 +54,20 @@ class TechReports {
 	
 	public static function tech_reports_admin_list() {
 		include('tech_reports_admin_list.php');	
+	}
+
+	//zongmin
+	public static function tech_reports_guest_view_paper_by_author_name () {
+		include('tech_reports_guest_view_paper_by_author_name.php');	
+	}
+
+	// Xiaoran
+	public static function tech_reports_guest_view_paper_by_type() {
+		include('tech_reports_guest_view_paper_by_type.php');	
+	}
+
+	public static function tech_reports_guest_view_paper_by_year() {
+		include('tech_reports_guest_view_paper_by_year.php');	
 	}
 
 	public static function tech_reports_admin_actions() {
@@ -163,7 +183,39 @@ class TechReports {
 		$query = "SELECT * FROM paper";
 		return $this->paper_db->get_results($query);
 	}
+
+	//Zongmin Sun
+	public function get_all_papers_by_author_name($c){
+		$query = "SELECT * FROM paper where author like '$c%' order by author";
+		return $this->paper_db->get_results($query);
+	}
+
+	//song Teng 
+	public function get_all_years() {
+		$query = "SELECT DISTINCT publication_year FROM paper";
+		return $this->paper_db->get_results($query);
+	}
+	// Song Teng 
+	public function get_all_papers_by_year($year) {
+		$query = "SELECT * FROM paper WHERE publication_year = $year ORDER by title";
+		return $this->paper_db->get_results($query);
+	}
+
+	// Xiaoran
+	public function get_all_papers_by_type($type) {
 	
+		$query = "SELECT * FROM paper WHERE paper.type = '" . $type . "' ORDER BY title Asc";
+		return $this->paper_db->get_results($query);
+	
+	}
+
+	//xiaoran
+	public function get_paper_detail_url_by_paperID($id) {
+		
+		$query = "SELECT guid FROM wp_posts WHERE ID IN (SELECT post_id FROM wp_postmeta WHERE meta_key = 'paper_id' AND meta_value = '" . $id . "')";
+		return $this->post_db->get_row($query);
+		
+	}
 	public function add_new_paper($values) {
        
         $this->paper_db->insert( 
@@ -294,4 +346,11 @@ register_activation_hook( __FILE__, array('TechReports','plugin_setup'));
 
 add_action('admin_menu', array('TechReports','tech_reports_admin_actions'));
 
+//zongmin
+add_shortcode( 'List_Paper_By_Author_Name', array('TechReports', 'tech_reports_guest_view_paper_by_author_name') );
+
+add_shortcode( 'List_Paper_By_Year', array('TechReports', 'tech_reports_guest_view_paper_by_year') );
+
+// Xiaoran
+add_shortcode( 'List_Paper_By_Type', array('TechReports', 'tech_reports_guest_view_paper_by_type') );
 ?>
