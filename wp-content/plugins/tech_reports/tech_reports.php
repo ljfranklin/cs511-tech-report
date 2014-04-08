@@ -23,12 +23,32 @@ class TechReports {
 		if($paper_db->get_var("SHOW TABLES LIKE 'paper'") !== 'paper') {
 			$sql = "CREATE TABLE paper (
 				paper_id INT NOT NULL AUTO_INCREMENT, 
-				title TEXT NOT NULL, 
-				author VARCHAR(40) NOT NULL, 
+				title TEXT NOT NULL,
 				abstract TEXT NOT NULL,
 				publication_year YEAR NOT NULL,
 				type VARCHAR(40) NOT NULL,
 				PRIMARY KEY (paper_id)
+				);";
+			$paper_db->query($sql);
+		}
+		if($paper_db->get_var("SHOW TABLES LIKE 'author'") !== 'author') {
+			$sql = "CREATE TABLE author (
+				author_id INT NOT NULL AUTO_INCREMENT,
+				first_name TEXT NOT NULL, 
+				middle_name TEXT NULL, 
+				last_name TEXT NOT NULL,
+				suffix VARCHAR(10) NULL,
+				PRIMARY KEY (author_id)
+				);";
+			$paper_db->query($sql);
+		}
+		if($paper_db->get_var("SHOW TABLES LIKE 'paperAuthorAssoc'") !== 'paperAuthorAssoc') {
+			$sql = "CREATE TABLE paperAuthorAssoc (
+				author_id INT NOT NULL,
+				paper_id INT NOT NULL,
+				PRIMARY KEY (author_id, paper_id),
+				FOREIGN KEY (author_id) REFERENCES author(author_id),
+				FOREIGN KEY (paper_id) REFERENCES paper(paper_id)
 				);";
 			$paper_db->query($sql);
 		}
@@ -290,8 +310,8 @@ class TechReports {
     }
     
     public function get_all_authors() {
-    	$query = "SELECT author FROM paper ORDER BY author ASC";
-    	return $this->paper_db->get_col($query);
+    	$query = "SELECT author_id, first_name, middle_name, last_name, suffix FROM author ORDER BY first_name ASC";
+    	return $this->paper_db->get_results($query, ARRAY_A);
     }
 }
 
