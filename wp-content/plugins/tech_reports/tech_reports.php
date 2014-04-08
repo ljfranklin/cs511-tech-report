@@ -288,6 +288,11 @@ class TechReports {
 		
 		return $post_id;
     }
+    
+    public function get_all_authors() {
+    	$query = "SELECT author FROM paper ORDER BY author ASC";
+    	return $this->paper_db->get_col($query);
+    }
 }
 
 register_activation_hook( __FILE__, array('TechReports','plugin_setup'));

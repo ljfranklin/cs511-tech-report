@@ -50,6 +50,8 @@
     };
 ?>
 
+<?php echo implode($tech_report->get_all_authors()); ?>
+
 <div class="wrap">
 	<h2>Upload a Research Paper</h2>
 	<form id="paper-upload-form" method="post" action="<?php echo $_SERVER['REQUEST_URI'] ?>&noheader=true" enctype="multipart/form-data">
