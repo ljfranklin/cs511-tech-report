@@ -6,7 +6,7 @@
     	
     	$values = array(
     		'title' => $_POST['paper_title'],
-    		'author' => $_POST['paper_author'],
+    		'authors' => $_POST['existing-authors'],
     		'abstract' => $_POST['paper_abstract'],
     		'year' => $_POST['paper_year'],
     		'type' => $_POST['paper_type'],
@@ -21,7 +21,7 @@
     	$values = array(
     		'paper_id' => $_POST['paper_id'],
     		'title' => $_POST['paper_title'],
-    		'author' => $_POST['paper_author'],
+    		'authors' => $_POST['existing-authors'],
     		'abstract' => $_POST['paper_abstract'],
     		'year' => $_POST['paper_year'],
     		'type' => $_POST['paper_type'],

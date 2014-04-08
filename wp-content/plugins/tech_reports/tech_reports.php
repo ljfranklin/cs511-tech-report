@@ -190,7 +190,6 @@ class TechReports {
 			'paper', 
 			array( 
 				'title' => $values['title'],
-				'author' => $values['author'],
 				'abstract' => $values['abstract'],
 				'type' => $values['type'],
 				'publication_year' => $values['year']
@@ -204,6 +203,20 @@ class TechReports {
 			) 
 		);
 		$paper_id = $this->paper_db->insert_id;
+		
+		foreach ($values['authors'] as $author_id) {
+			$this->paper_db->insert(
+				'paperAuthorAssoc',
+				array(
+					'paper_id' => $paper_id,
+					'author_id' => $author_id
+				),
+				array(
+					'%d',
+					'%d'
+				)
+			);
+		}
 		
 		$user_id = get_current_user_id();
 		$new_post = array(
