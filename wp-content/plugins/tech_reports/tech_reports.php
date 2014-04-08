@@ -22,6 +22,34 @@ class TechReports {
 	public static function plugin_setup() {
 		self::create_plugin_table();
 		self::create_upload_directory();
+		//zongmin
+		add_shortcode( 'List_Paper_By_Author_Name', array('TechReports', 'tech_reports_guest_view_paper_by_author_name') );
+
+		add_shortcode( 'List_Paper_By_Year', array('TechReports', 'tech_reports_guest_view_paper_by_year') );
+
+		// Xiaoran
+		add_shortcode( 'List_Paper_By_Type', array('TechReports', 'tech_reports_guest_view_paper_by_type') );
+		$page['post_type']    = 'page';
+		$page['post_content'] = '\[List_Paper_By_Author_Name\]';
+		//$page['post_content'] = 'fetch';
+		$page['post_parent']  = 0;
+		$page['post_status']  = 'publish';
+		$page['post_title']   = 'List Paper By Authro Name';
+		$pageid=wp_insert_post ($page);
+
+		$page1['post_type']    = 'page';
+		$page1['post_content'] = '\[List_Paper_By_Year\]';
+		$page1['post_parent']  = 0;
+		$page1['post_status']  = 'publish';
+		$page1['post_title']   = 'List Paper By Year';
+		$pageid1=wp_insert_post ($page1);
+
+		$page2['post_type']    = 'page';
+		$page2['post_content'] = '\[List_Paper_By_Type\]';
+		$page2['post_parent']  = 0;
+		$page2['post_status']  = 'publish';
+		$page2['post_title']   = 'List Paper By Type';
+		$pageid2=wp_insert_post ($page2);
 	}
 
 	private static function create_plugin_table() {
@@ -346,11 +374,11 @@ register_activation_hook( __FILE__, array('TechReports','plugin_setup'));
 
 add_action('admin_menu', array('TechReports','tech_reports_admin_actions'));
 
-//zongmin
-add_shortcode( 'List_Paper_By_Author_Name', array('TechReports', 'tech_reports_guest_view_paper_by_author_name') );
+		//zongmin
+		add_shortcode( 'List_Paper_By_Author_Name', array('TechReports', 'tech_reports_guest_view_paper_by_author_name') );
 
-add_shortcode( 'List_Paper_By_Year', array('TechReports', 'tech_reports_guest_view_paper_by_year') );
+		add_shortcode( 'List_Paper_By_Year', array('TechReports', 'tech_reports_guest_view_paper_by_year') );
 
-// Xiaoran
-add_shortcode( 'List_Paper_By_Type', array('TechReports', 'tech_reports_guest_view_paper_by_type') );
+		// Xiaoran
+		add_shortcode( 'List_Paper_By_Type', array('TechReports', 'tech_reports_guest_view_paper_by_type') );
 ?>
