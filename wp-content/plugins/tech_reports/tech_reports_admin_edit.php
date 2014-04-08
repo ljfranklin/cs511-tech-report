@@ -93,7 +93,7 @@ $(document).ready(function() {
 	  'South Carolina', 'South Dakota', 'Tennessee', 'Texas', 'Utah', 'Vermont',
 	  'Virginia', 'Washington', 'West Virginia', 'Wisconsin', 'Wyoming'
 	];
-	console.log($('.typeahead').size());
+	
 	$('.typeahead').typeahead({
 	  hint: true,
 	  highlight: true,
@@ -102,7 +102,14 @@ $(document).ready(function() {
 	{
 	  name: 'states',
 	  displayKey: 'value',
-	  source: substringMatcher(states)
+	  source: substringMatcher(states),
+	  templates: {
+			empty: [
+			  '<div class="empty-message">',
+			  'Add a new author',
+			  '</div>'
+    		].join('\n')
+  		}
 	});
 });
 
@@ -134,7 +141,9 @@ $(document).ready(function() {
 					</th>
 					<td>
 						<input type="text" id="paper_author" name="paper_author" size="30" value="<?php echo $get_existing_value('author') ?>" required/>
-					 	<input class="typeahead" type="text" placeholder="Search Author Names">
+						<div class="scrollable-dropdown-menu has-empty-option">
+							<input class="typeahead" type="text" placeholder="Search Author Names">
+						</div>
 					</td>
 				</tr>
 				<tr>
