@@ -54,8 +54,18 @@
 
 <link href="<?php echo $plugin_url; ?>scripts/typeahead.css" rel="stylesheet" type="text/css">
 
-<script src="//code.jquery.com/jquery-1.11.0.min.js"></script>
+<script src="<?php echo $plugin_url; ?>scripts/jquery-2.1.0.min.js"></script>
+<script src="<?php echo $plugin_url; ?>scripts/underscore-min.js"></script>
 <script src="<?php echo $plugin_url; ?>scripts/typeahead.bundle.js"></script>
+<script id="existing-author-template" type="text/template">
+   <div class="existing-author">
+       <div class="author-name">
+	       <%= name %>
+	   </div>
+	   <input type="hidden" name="existing-authors[]" value="<%= authorId %>">
+   </div>
+</script>
+
 <script>
 
 $(document).ready(function() {
@@ -94,7 +104,9 @@ $(document).ready(function() {
 	  'Virginia', 'Washington', 'West Virginia', 'Wisconsin', 'Wyoming'
 	];
 	
-	$('.typeahead').typeahead({
+	var $typeahead = $('.typeahead');
+	
+	$typeahead.typeahead({
 	  hint: true,
 	  highlight: true,
 	  minLength: 1
@@ -105,11 +117,33 @@ $(document).ready(function() {
 	  source: substringMatcher(states),
 	  templates: {
 			empty: [
-			  '<div class="empty-message">',
+			  '<div class="empty-message add-new-author">',
 			  'Add a new author',
 			  '</div>'
     		].join('\n')
   		}
+	});
+	
+	var templateString = $('#existing-author-template').html();
+	var existingAuthorTemplate = _.template(templateString);	
+		
+	var $authorList = $('.author-list');
+	$typeahead.on('typeahead:selected', function() {
+		var selectedVal = $typeahead.val();
+		$typeahead.typeahead('val', '');
+		
+		var existingAuthor = existingAuthorTemplate({
+			name: selectedVal,
+			authorId: 1
+		});
+		
+		$authorList.append(existingAuthor);
+	});
+	
+	$('.typeahead-container').on('click', '.add-new-author', function() {
+		var selectedVal = $typeahead.val();
+		$typeahead.typeahead('val', '');
+		$authorList.append(selectedVal);
 	});
 });
 
@@ -141,9 +175,13 @@ $(document).ready(function() {
 					</th>
 					<td>
 						<input type="text" id="paper_author" name="paper_author" size="30" value="<?php echo $get_existing_value('author') ?>" required/>
-						<div class="scrollable-dropdown-menu has-empty-option">
+						<div class="typeahead-container scrollable-dropdown-menu has-empty-option">
 							<input class="typeahead" type="text" placeholder="Search Author Names">
 						</div>
+						<div>
+							Author(s):
+						</div>
+						<div class="author-list"></div>
 					</td>
 				</tr>
 				<tr>
