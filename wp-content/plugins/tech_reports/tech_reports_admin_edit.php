@@ -6,7 +6,8 @@
     	
     	$values = array(
     		'title' => $_POST['paper_title'],
-    		'authors' => $_POST['existing-authors'],
+    		'existing_authors' => $_POST['existing_authors'],
+    		'new_authors' => $_POST['new_authors'],
     		'abstract' => $_POST['paper_abstract'],
     		'year' => $_POST['paper_year'],
     		'type' => $_POST['paper_type'],
@@ -21,7 +22,7 @@
     	$values = array(
     		'paper_id' => $_POST['paper_id'],
     		'title' => $_POST['paper_title'],
-    		'authors' => $_POST['existing-authors'],
+    		'authors' => $_POST['existing_authors'],
     		'abstract' => $_POST['paper_abstract'],
     		'year' => $_POST['paper_year'],
     		'type' => $_POST['paper_type'],
@@ -65,7 +66,7 @@
 <script src="<?php echo $plugin_url; ?>scripts/typeahead.bundle.js"></script>
 <script id="existing-author-template" type="text/template">
    <div class="author-inputs existing-author">
-       <input type="hidden" name="existing-authors[]" value="<%= author_id %>">
+       <input type="hidden" name="existing_authors[]" value="<%= author_id %>">
    	   <input type="text" value="<%= first_name %>" disabled>
        <input type="text" value="<%= middle_name %>" disabled>
        <input type="text" value="<%= last_name %>" disabled>
@@ -74,9 +75,9 @@
 </script>
 <script id="new-author-template" type="text/template">
    <div class="author-inputs new-author">
-       <input type="text" name="new-author[<%= newAuthorIndex %>][first_name]" value="<%= first_name %>" placeholder="First name" required>
-       <input type="text" name="new-author[<%= newAuthorIndex %>][middle_name]" value="<%= middle_name %>" placeholder="Middle name">
-       <input type="text" name="new-author[<%= newAuthorIndex %>][last_name]" value="<%= last_name %>" placeholder="Last name" required>
+       <input type="text" name="new_authors[<%= newAuthorIndex %>][first_name]" value="<%= first_name %>" placeholder="First name" required>
+       <input type="text" name="new_authors[<%= newAuthorIndex %>][middle_name]" value="<%= middle_name %>" placeholder="Middle name">
+       <input type="text" name="new_authors[<%= newAuthorIndex %>][last_name]" value="<%= last_name %>" placeholder="Last name" required>
        <button class="remove-author">X</button>
    </div>
 </script>

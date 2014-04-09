@@ -204,7 +204,31 @@ class TechReports {
 		);
 		$paper_id = $this->paper_db->insert_id;
 		
-		foreach ($values['authors'] as $author_id) {
+		$author_ids = $values['existing_authors'];
+		
+		//Insert new authors
+		foreach ($values['new_authors'] as $new_author) {
+			$this->paper_db->insert(
+				'author',
+				array(
+					'first_name' => $new_author['first_name'],
+					'middle_name' => $new_author['middle_name'],
+					'last_name' => $new_author['last_name'],
+					'suffix' => NULL
+				),
+				array(
+					'%s',
+					'%s',
+					'%s',
+					'%s'
+				)
+			);
+			$new_author_id = $this->paper_db->insert_id;
+			array_push($author_ids, $new_author_id);
+		}
+		
+		//Add association between papers and authors
+		foreach ($author_ids as $author_id) {
 			$this->paper_db->insert(
 				'paperAuthorAssoc',
 				array(
