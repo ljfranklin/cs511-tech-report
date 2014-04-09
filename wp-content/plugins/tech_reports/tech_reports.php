@@ -298,7 +298,6 @@ class TechReports {
 			'paper', 
 			array( 
 				'title' => $title,
-				'author' => $new_values['author'],
 				'abstract' => $new_values['abstract'],
 				'type' => $new_values['type'],
 				'publication_year' => $new_values['year']
@@ -310,13 +309,75 @@ class TechReports {
 				'%s',
 				'%s',
 				'%s',
-				'%s',
 				'%d'
 			),
 			array(
 				'%d'
 			)
 		);
+		
+		$author_ids = $new_values['existing_authors'];
+		
+		//Insert new authors
+		foreach ($new_values['new_authors'] as $new_author) {
+			$this->paper_db->insert(
+				'author',
+				array(
+					'first_name' => $new_author['first_name'],
+					'middle_name' => $new_author['middle_name'],
+					'last_name' => $new_author['last_name'],
+					'suffix' => NULL
+				),
+				array(
+					'%s',
+					'%s',
+					'%s',
+					'%s'
+				)
+			);
+			$new_author_id = $this->paper_db->insert_id;
+			array_push($author_ids, $new_author_id);
+		}
+		
+		$already_added_authors = $this->paper_db->get_col("SELECT author_id FROM paperAuthorAssoc WHERE paper_id=$paper_id");
+		
+		//Add association between papers and authors
+		foreach ($author_ids as $author_id) {
+			
+			$already_added = in_array($author_id, $already_added_authors);
+		
+			if ($already_added === false) {
+				$this->paper_db->insert(
+					'paperAuthorAssoc',
+					array(
+						'paper_id' => $paper_id,
+						'author_id' => $author_id
+					),
+					array(
+						'%d',
+						'%d'
+					)
+				);
+			}
+		}
+		
+		foreach ($already_added_authors as $author_id) {
+			$author_removed = (in_array($author_id, $author_ids) === false);
+		
+			if ($author_removed) {
+				$this->paper_db->delete(
+					'paperAuthorAssoc',
+					array(
+						'paper_id' => $paper_id,
+						'author_id' => $author_id
+					),
+					array(
+						'%d',
+						'%d'
+					)
+				);
+			}
+		}
 
 		$query = "SELECT wposts.ID
 			FROM ".$wpdb->posts." AS wposts

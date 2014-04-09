@@ -2,12 +2,13 @@
 
 	$tech_report = new TechReports();
 
+	$new_authors = isset($_POST['new_authors']) ? $_POST['new_authors'] : array();
+   	$existing_authors = isset($_POST['existing_authors']) ? $_POST['existing_authors'] : array();
     if(isset($_POST['action']) && $_POST['action'] == 'create') {
-    	
     	$values = array(
     		'title' => $_POST['paper_title'],
-    		'existing_authors' => $_POST['existing_authors'],
-    		'new_authors' => $_POST['new_authors'],
+    		'existing_authors' => $existing_authors,
+    		'new_authors' => $new_authors,
     		'abstract' => $_POST['paper_abstract'],
     		'year' => $_POST['paper_year'],
     		'type' => $_POST['paper_type'],
@@ -22,7 +23,8 @@
     	$values = array(
     		'paper_id' => $_POST['paper_id'],
     		'title' => $_POST['paper_title'],
-    		'authors' => $_POST['existing_authors'],
+    		'existing_authors' => $_POST['existing_authors'],
+    		'new_authors' => $_POST['new_authors'],
     		'abstract' => $_POST['paper_abstract'],
     		'year' => $_POST['paper_year'],
     		'type' => $_POST['paper_type'],
@@ -76,7 +78,7 @@
 <script id="new-author-template" type="text/template">
    <div class="author-inputs new-author">
        <input type="text" name="new_authors[<%= newAuthorIndex %>][first_name]" value="<%= first_name %>" placeholder="First name" required>
-       <input type="text" name="new_authors[<%= newAuthorIndex %>][middle_name]" value="<%= middle_name %>" placeholder="Middle name">
+       <input type="text" name="new_authors[<%= newAuthorIndex %>][middle_name]" value="<%= middle_name %>" placeholder="Middle name (optional)">
        <input type="text" name="new_authors[<%= newAuthorIndex %>][last_name]" value="<%= last_name %>" placeholder="Last name" required>
        <button class="remove-author">X</button>
    </div>
