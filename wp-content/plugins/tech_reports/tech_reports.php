@@ -125,6 +125,9 @@ class TechReports {
 			$full_name .= ' ' . $author['middle_name'];
 		}
 		$full_name .= ' ' . $author['last_name'];
+		if (strlen($author['suffix']) > 0) {
+			$full_name .= ' ' . strtoupper($author['suffix']);
+		}
 		return $full_name;
 	}
 	
@@ -235,7 +238,7 @@ class TechReports {
 	}
 	
 	public function get_all_papers() {
-		$query = "SELECT paper.* FROM paper";
+		$query = "SELECT * FROM paper";
 		return $this->paper_db->get_results($query);
 	}
 	
@@ -269,7 +272,7 @@ class TechReports {
 					'first_name' => $new_author['first_name'],
 					'middle_name' => $new_author['middle_name'],
 					'last_name' => $new_author['last_name'],
-					'suffix' => NULL
+					'suffix' => $new_author['suffix']
 				),
 				array(
 					'%s',
@@ -381,7 +384,7 @@ class TechReports {
 					'first_name' => $new_author['first_name'],
 					'middle_name' => $new_author['middle_name'],
 					'last_name' => $new_author['last_name'],
-					'suffix' => NULL
+					'suffix' => $new_author['suffix']
 				),
 				array(
 					'%s',
@@ -467,7 +470,12 @@ class TechReports {
     
     public function get_all_authors() {
     	$query = "SELECT author_id, first_name, middle_name, last_name, suffix FROM author ORDER BY first_name ASC";
-    	return $this->paper_db->get_results($query, ARRAY_A);
+    	$results = $this->paper_db->get_results($query, ARRAY_A);
+    	foreach ($results as $key => $author) {
+    		$results[$key]['full_name'] = $this->get_author_fullname($author);
+    	}
+    	
+    	return $results;
     }
 }
 

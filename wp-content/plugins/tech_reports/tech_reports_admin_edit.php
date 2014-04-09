@@ -77,6 +77,14 @@
    	   <input type="text" value="<%= first_name %>" disabled>
        <input type="text" value="<%= middle_name %>" disabled>
        <input type="text" value="<%= last_name %>" disabled>
+       <select value="<%= suffix %>" disabled>
+           <option value=""></option>
+           <option value="jr">Jr</option>
+           <option value="sr">Sr</option>
+           <option value="ii">II</option>
+           <option value="iii">III</option>
+           <option value="iv">IV</option>
+       </select>
        <button class="remove-author">X</button>
    </div>
 </script>
@@ -85,6 +93,14 @@
        <input type="text" name="new_authors[<%= newAuthorIndex %>][first_name]" value="<%= first_name %>" placeholder="First name" required>
        <input type="text" name="new_authors[<%= newAuthorIndex %>][middle_name]" value="<%= middle_name %>" placeholder="Middle name (optional)">
        <input type="text" name="new_authors[<%= newAuthorIndex %>][last_name]" value="<%= last_name %>" placeholder="Last name" required>
+       <select name="new_authors[<%= newAuthorIndex %>][suffix]">
+           <option value=""></option>
+           <option value="jr">Jr</option>
+           <option value="sr">Sr</option>
+           <option value="ii">II</option>
+           <option value="iii">III</option>
+           <option value="iv">IV</option>
+       </select>
        <button class="remove-author">X</button>
    </div>
 </script>
@@ -96,7 +112,6 @@ var paperAuthors = <?php echo $get_paper_authors(); ?>;
 
 $(document).ready(function() {
 
-	formatAuthors();
 	addInputsForExistingAuthors();
 	
 	var $typeahead = $('.typeahead');
@@ -195,12 +210,10 @@ function addAuthor(author) {
 	
 	$authorList.append($authorElement);
 	
-	$authorList.find('input[disabled]').prop('disabled', true);
-}
-
-function formatAuthors() {
-	allAuthors = _.each(allAuthors, function(author) {
-		author['full_name'] = [author['first_name'], author['middle_name'], author['last_name']].join(' ');
+	$authorList.find('input[disabled], select[disabled]').prop('disabled', true);
+	$authorList.find('select[disabled]').each(function(i, el) {
+		var val = $(el).attr('value');
+		$(el).val(val);
 	});
 }
 
