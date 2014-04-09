@@ -74,7 +74,7 @@
 <script id="new-author-template" type="text/template">
    <div class="new-author">
        <input type="text" name="new-author[<%= newAuthorIndex %>][first_name]" value="<%= first_name %>" placeholder="First name" required>
-       <input type="text" name="new-author[<%= newAuthorIndex %>][middle_name]" value="<%= middle_name %>" placeholder="Middle name" required>
+       <input type="text" name="new-author[<%= newAuthorIndex %>][middle_name]" value="<%= middle_name %>" placeholder="Middle name">
        <input type="text" name="new-author[<%= newAuthorIndex %>][last_name]" value="<%= last_name %>" placeholder="Last name" required>
    </div>
 </script>
@@ -86,33 +86,6 @@ var authors = <?php echo $get_authors(); ?>;
 $(document).ready(function() {
 
 	formatAuthors();
-
-	var substringMatcher = function(authors) {
-	
-	  return function findMatches(q, cb) {
-		var matches, substringRegex;
-		
-		matches = [];
-		substrRegex = new RegExp(q, 'i');
-	 
-		$.each(authors, function(i, author) {
-		  if (substrRegex.test(author['full_name'])) {
-		    matches.push(author);
-		  }
-		});
-		
-		//if no results, show option to add new author
-		if (matches.length === 0) {
-			matches.push({
-				full_name: 'Add ' + q + ' as new author',
-				isNewAuthor: true,
-				rawName: q
-			});
-		}
-	 	
-		cb(matches);
-	  };
-	};
 	
 	var $typeahead = $('.typeahead');
 	$typeahead.typeahead({
@@ -134,6 +107,13 @@ $(document).ready(function() {
   		}
 	});
 	
+	$typeahead.keydown(function(event){
+		if(event.keyCode == 13) {
+		  event.preventDefault();
+		  return false;
+		}
+	});
+	
 	var existingAuthorTemplate = _.template($('#existing-author-template').html());
 	var newAuthorTemplate = _.template($('#new-author-template').html());
 		
@@ -142,54 +122,70 @@ $(document).ready(function() {
 		
 		$typeahead.typeahead('val', '');
 		
-		var $authorElement;
+		var authorElement;
 		if (author.isNewAuthor) {
 			var rawName = author.rawName.trim();
 			var authorData = splitFullNameIntoFirstLast(rawName);
 			authorData.newAuthorIndex = $authorList.find('.new-author').size();
 		
-			$authorElement = newAuthorTemplate(authorData);
+			authorElement = newAuthorTemplate(authorData);
 		} else {
-			$authorElement = existingAuthorTemplate(author);
+			authorElement = existingAuthorTemplate(author);
 		}
 		
-		$authorList.append($authorElement);
+		$authorList.append(authorElement);
+		
 		$authorList.find('input[disabled]').prop('disabled', true);
 	});
+});
+
+function substringMatcher(authors) {
+  return function findMatches(q, cb) {
+	var matches, substringRegex;
 	
-	$('.typeahead-container').on('click', '.add-new-author', function() {
-		var selectedVal = $typeahead.val().trim();
-		$typeahead.typeahead('val', '');
-		
-		var authorData = splitFullNameIntoFirstLast(selectedVal);
-		authorData.newAuthorIndex = $authorList.find('.new-author').size();
-		
-		var newAuthor = newAuthorTemplate(authorData);
-		$authorList.append(newAuthor);
+	matches = [];
+	substrRegex = new RegExp(q, 'i');
+ 
+	$.each(authors, function(i, author) {
+	  if (substrRegex.test(author['full_name'])) {
+	    matches.push(author);
+	  }
 	});
 	
-	function formatAuthors() {
-		authors = _.each(authors, function(author) {
-			author['full_name'] = [author['first_name'], author['middle_name'], author['last_name']].join(' ');
+	//if no results, show option to add new author
+	if (matches.length === 0) {
+		matches.push({
+			full_name: 'Add ' + q + ' as new author',
+			isNewAuthor: true,
+			rawName: q
 		});
 	}
+ 	
+	cb(matches);
+  };
+};
+
+function formatAuthors() {
+	authors = _.each(authors, function(author) {
+		author['full_name'] = [author['first_name'], author['middle_name'], author['last_name']].join(' ');
+	});
+}
+
+function splitFullNameIntoFirstLast(fullName) {
+	var authorData = {};
 	
-	function splitFullNameIntoFirstLast(fullName) {
-		var authorData = {};
-		
-		var spaceIndex = fullName.indexOf(' ');
-		if (spaceIndex <= 0) {
-			authorData.first_name = fullName;
-			authorData.last_name = '';
-		} else {
-			authorData.first_name = fullName.substring(0, spaceIndex);
-			authorData.last_name = fullName.substring(spaceIndex + 1);
-		}
-		authorData.middle_name = '';
-		
-		return authorData;
+	var spaceIndex = fullName.indexOf(' ');
+	if (spaceIndex <= 0) {
+		authorData.first_name = fullName;
+		authorData.last_name = '';
+	} else {
+		authorData.first_name = fullName.substring(0, spaceIndex);
+		authorData.last_name = fullName.substring(spaceIndex + 1);
 	}
-});
+	authorData.middle_name = '';
+	
+	return authorData;
+}
 
 </script>
 
@@ -216,7 +212,6 @@ $(document).ready(function() {
 						<label for="paper_author">Author:</label>
 					</th>
 					<td>
-						<input type="text" id="paper_author" name="paper_author" size="30" value="<?php echo $get_existing_value('author') ?>" required/>
 						<div class="typeahead-container scrollable-dropdown-menu has-empty-option">
 							<input class="typeahead" type="text" placeholder="Search Author Names">
 						</div>
