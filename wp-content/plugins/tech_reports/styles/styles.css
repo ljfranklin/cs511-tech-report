@@ -4,3 +4,7 @@ input[disabled] {
 	background-color: #eee;
 	opacity: 1;
 }
+
+.author-list:empty:after {
+	content: "No authors";
+}

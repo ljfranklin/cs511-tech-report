@@ -204,6 +204,11 @@ function removeAuthor(event) {
 	var $authorList = $authorElement.parents('.author-list');
 	$authorElement.remove();
 	
+	//Make sure whitespace is removed so No Authors message is displayed by css
+	if ($authorList.children().size() === 0) {
+		$authorList.html('');
+	} 
+	
 	//update new author indexes
 	if (isNewAuthor) {
 		$authorList.find('.new-author').each(function(authorIndex, authorDiv) {
