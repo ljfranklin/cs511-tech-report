@@ -235,7 +235,7 @@ class TechReports {
 	}
 	
 	public function get_all_papers() {
-		$query = "SELECT * FROM paper";
+		$query = "SELECT paper.* FROM paper";
 		return $this->paper_db->get_results($query);
 	}
 	
