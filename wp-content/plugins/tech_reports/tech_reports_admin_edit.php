@@ -115,52 +115,9 @@ $(document).ready(function() {
 		  return false;
 		}
 	});
-	
-	var existingAuthorTemplate = _.template($('#existing-author-template').html());
-	var newAuthorTemplate = _.template($('#new-author-template').html());
 		
-	var $authorList = $('.author-list');
-	$typeahead.on('typeahead:selected', function(e, author) {
-		
-		$typeahead.typeahead('val', '');
-		
-		var authorElement;
-		if (author.isNewAuthor) {
-			var rawName = author.rawName.trim();
-			var authorData = splitFullNameIntoFirstLast(rawName);
-			authorData.newAuthorIndex = $authorList.find('.new-author').size();
-		
-			authorElement = newAuthorTemplate(authorData);
-		} else {
-			authorElement = existingAuthorTemplate(author);
-		}
-		
-		$authorList.append(authorElement);
-		
-		$authorList.find('input[disabled]').prop('disabled', true);
-	});
-	
-	$authorList.on('click', '.remove-author', function(event) {
-		event.preventDefault();
-		
-		var $btn = $(event.target);
-		var $authorElement = $btn.parents('.author-inputs');
-		var isNewAuthor = $authorElement.hasClass('new-author');
-		$authorElement.remove();
-		
-		//update new author indexes
-		if (isNewAuthor) {
-			$authorList.find('.new-author').each(function(authorIndex, authorDiv) {
-				var $author = $(authorDiv);
-				$author.find('input').each(function(i, input) {
-					var $input = $(input);
-					var originalName = $input.attr('name');
-					var newName = originalName.replace(/\[\d+\]/, '\[' + authorIndex + '\]');
-					$input.attr('name', newName);
-				});
-			});
-		}
-	});
+	$typeahead.on('typeahead:selected', addAuthor);
+	$('.author-list').on('click', '.remove-author', removeAuthor);
 });
 
 function substringMatcher(authors) {
@@ -189,6 +146,32 @@ function substringMatcher(authors) {
   };
 };
 
+function addAuthor(e, author) {
+
+	e.preventDefault();
+
+	var existingAuthorTemplate = _.template($('#existing-author-template').html());
+	var newAuthorTemplate = _.template($('#new-author-template').html());
+	var $authorList = $('.author-list');
+	
+	$(this).typeahead('val', '');
+		
+	var authorElement;
+	if (author.isNewAuthor) {
+		var rawName = author.rawName.trim();
+		var authorData = splitFullNameIntoFirstLast(rawName);
+		authorData.newAuthorIndex = $authorList.find('.new-author').size();
+	
+		authorElement = newAuthorTemplate(authorData);
+	} else {
+		authorElement = existingAuthorTemplate(author);
+	}
+	
+	$authorList.append(authorElement);
+	
+	$authorList.find('input[disabled]').prop('disabled', true);
+}
+
 function formatAuthors() {
 	authors = _.each(authors, function(author) {
 		author['full_name'] = [author['first_name'], author['middle_name'], author['last_name']].join(' ');
@@ -209,6 +192,30 @@ function splitFullNameIntoFirstLast(fullName) {
 	authorData.middle_name = '';
 	
 	return authorData;
+}
+
+function removeAuthor(event) {
+	event.preventDefault();
+		
+	var $btn = $(event.target);
+	var $authorElement = $btn.parents('.author-inputs');
+	var isNewAuthor = $authorElement.hasClass('new-author');
+	
+	var $authorList = $authorElement.parents('.author-list');
+	$authorElement.remove();
+	
+	//update new author indexes
+	if (isNewAuthor) {
+		$authorList.find('.new-author').each(function(authorIndex, authorDiv) {
+			var $author = $(authorDiv);
+			$author.find('input').each(function(i, input) {
+				var $input = $(input);
+				var originalName = $input.attr('name');
+				var newName = originalName.replace(/\[\d+\]/, '\[' + authorIndex + '\]');
+				$input.attr('name', newName);
+			});
+		});
+	}
 }
 
 </script>
