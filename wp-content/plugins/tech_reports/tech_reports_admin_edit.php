@@ -58,16 +58,24 @@
 <?php $plugin_url = plugin_dir_url( __FILE__ ); ?>
 
 <link href="<?php echo $plugin_url; ?>scripts/typeahead.css" rel="stylesheet" type="text/css">
+<link href="<?php echo $plugin_url; ?>styles/styles.css" rel="stylesheet" type="text/css">
 
 <script src="<?php echo $plugin_url; ?>scripts/jquery-2.1.0.min.js"></script>
 <script src="<?php echo $plugin_url; ?>scripts/underscore-min.js"></script>
 <script src="<?php echo $plugin_url; ?>scripts/typeahead.bundle.js"></script>
 <script id="existing-author-template" type="text/template">
    <div class="existing-author">
-       <div class="author-name">
-	       <%= name %>
-	   </div>
-	   <input type="hidden" name="existing-authors[]" value="<%= authorId %>">
+       <input type="hidden" name="existing-authors[]" value="<%= author_id %>">
+   	   <input type="text" value="<%= first_name %>" disabled>
+       <input type="text" value="<%= middle_name %>" disabled>
+       <input type="text" value="<%= last_name %>" disabled>
+   </div>
+</script>
+<script id="new-author-template" type="text/template">
+   <div class="new-author">
+       <input type="text" name="new-author[<%= newAuthorIndex %>][first_name]" value="<%= first_name %>" placeholder="First name" required>
+       <input type="text" name="new-author[<%= newAuthorIndex %>][middle_name]" value="<%= middle_name %>" placeholder="Middle name" required>
+       <input type="text" name="new-author[<%= newAuthorIndex %>][last_name]" value="<%= last_name %>" placeholder="Last name" required>
    </div>
 </script>
 
@@ -92,13 +100,21 @@ $(document).ready(function() {
 		    matches.push(author);
 		  }
 		});
+		
+		//if no results, show option to add new author
+		if (matches.length === 0) {
+			matches.push({
+				full_name: 'Add ' + q + ' as new author',
+				isNewAuthor: true,
+				rawName: q
+			});
+		}
 	 	
 		cb(matches);
 	  };
 	};
 	
 	var $typeahead = $('.typeahead');
-	
 	$typeahead.typeahead({
 	  hint: true,
 	  highlight: true,
@@ -118,32 +134,60 @@ $(document).ready(function() {
   		}
 	});
 	
-	var templateString = $('#existing-author-template').html();
-	var existingAuthorTemplate = _.template(templateString);	
+	var existingAuthorTemplate = _.template($('#existing-author-template').html());
+	var newAuthorTemplate = _.template($('#new-author-template').html());
 		
 	var $authorList = $('.author-list');
 	$typeahead.on('typeahead:selected', function(e, author) {
-
+		
 		$typeahead.typeahead('val', '');
 		
-		var existingAuthor = existingAuthorTemplate({
-			name: author['full_name'],
-			authorId: author['author_id']
-		});
+		var $authorElement;
+		if (author.isNewAuthor) {
+			var rawName = author.rawName.trim();
+			var authorData = splitFullNameIntoFirstLast(rawName);
+			authorData.newAuthorIndex = $authorList.find('.new-author').size();
 		
-		$authorList.append(existingAuthor);
+			$authorElement = newAuthorTemplate(authorData);
+		} else {
+			$authorElement = existingAuthorTemplate(author);
+		}
+		
+		$authorList.append($authorElement);
+		$authorList.find('input[disabled]').prop('disabled', true);
 	});
 	
 	$('.typeahead-container').on('click', '.add-new-author', function() {
-		var selectedVal = $typeahead.val();
+		var selectedVal = $typeahead.val().trim();
 		$typeahead.typeahead('val', '');
-		$authorList.append(selectedVal);
+		
+		var authorData = splitFullNameIntoFirstLast(selectedVal);
+		authorData.newAuthorIndex = $authorList.find('.new-author').size();
+		
+		var newAuthor = newAuthorTemplate(authorData);
+		$authorList.append(newAuthor);
 	});
 	
 	function formatAuthors() {
 		authors = _.each(authors, function(author) {
 			author['full_name'] = [author['first_name'], author['middle_name'], author['last_name']].join(' ');
 		});
+	}
+	
+	function splitFullNameIntoFirstLast(fullName) {
+		var authorData = {};
+		
+		var spaceIndex = fullName.indexOf(' ');
+		if (spaceIndex <= 0) {
+			authorData.first_name = fullName;
+			authorData.last_name = '';
+		} else {
+			authorData.first_name = fullName.substring(0, spaceIndex);
+			authorData.last_name = fullName.substring(spaceIndex + 1);
+		}
+		authorData.middle_name = '';
+		
+		return authorData;
 	}
 });
 
