@@ -162,7 +162,12 @@ class TechReports {
 		wp_delete_post($post_id, true);
 		
 		unlink($this->get_paper_filename($paper_id));
-		$this->paper_db->delete( 'paper', array( 'paper_id' => $paper_id ));	
+		
+		$this->paper_db->delete( 'paperAuthorAssoc', array( 'paper_id' => $paper_id ));
+		$this->paper_db->delete( 'paper', array( 'paper_id' => $paper_id ));
+		
+		//delete authors not tied to paper
+		$this->paper_db->query("DELETE FROM author WHERE author_id NOT IN (SELECT author_id FROM paperAuthorAssoc)");
 	}
 
 	public function delete_multiple_papers($paper_ids) {
@@ -183,8 +188,12 @@ class TechReports {
 		
 		foreach ($paper_ids as $paper_id){
 			unlink($this->get_paper_filename($paper_id));
-			$this->paper_db->delete( 'paper', array( 'paper_id' => $paper_id ));	
+			$this->paper_db->delete( 'paperAuthorAssoc', array( 'paper_id' => $paper_id ));
+			$this->paper_db->delete( 'paper', array( 'paper_id' => $paper_id ));
 		}
+		
+		//delete authors not tied to paper
+		$this->paper_db->query("DELETE FROM author WHERE author_id NOT IN (SELECT author_id FROM paperAuthorAssoc)");
 	}
 	
 	public function get_all_papers() {
@@ -386,6 +395,9 @@ class TechReports {
 				);
 			}
 		}
+		
+		//delete authors not tied to paper
+		$this->paper_db->query("DELETE FROM author WHERE author_id NOT IN (SELECT author_id FROM paperAuthorAssoc)");
 
 		$query = "SELECT wposts.ID
 			FROM ".$wpdb->posts." AS wposts

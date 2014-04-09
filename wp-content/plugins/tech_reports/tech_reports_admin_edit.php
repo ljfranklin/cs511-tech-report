@@ -58,7 +58,8 @@
     };
     
     $get_paper_authors = function() use ($paper) {
-    	return json_encode($paper['authors']);
+    	$authors = isset($paper['authors']) ? $paper['authors'] : array();
+    	return json_encode($authors);
     };
 ?>
 
