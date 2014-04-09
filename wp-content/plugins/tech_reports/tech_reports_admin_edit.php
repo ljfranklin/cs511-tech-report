@@ -96,6 +96,7 @@ var paperAuthors = <?php echo $get_paper_authors(); ?>;
 $(document).ready(function() {
 
 	formatAuthors();
+	addInputsForExistingAuthors();
 	
 	var $typeahead = $('.typeahead');
 	$typeahead.typeahead({
@@ -117,14 +118,13 @@ $(document).ready(function() {
   		}
 	});
 	
+	//don't submit form when enter is pressed in typeahead
 	$typeahead.keydown(function(event){
 		if(event.keyCode == 13) {
 		  event.preventDefault();
 		  return false;
 		}
 	});
-	
-	_.each(paperAuthors, addAuthor);
 		
 	$typeahead.on('typeahead:selected', function(e, author) {
 		e.preventDefault();
@@ -134,15 +134,25 @@ $(document).ready(function() {
 	$('.author-list').on('click', '.remove-author', removeAuthor);
 });
 
+function addInputsForExistingAuthors() {
+	_.chain(allAuthors)
+		.filter(function(author) {
+			return _.findWhere(paperAuthors, {author_id: author.author_id});
+		})
+		.each(addAuthor);
+}
+
 function substringMatcher(authors) {
+
   return function findMatches(q, cb) {
 	var matches, substringRegex;
 	
 	matches = [];
 	substrRegex = new RegExp(q, 'i');
- 
-	$.each(authors, function(i, author) {
-	  if (substrRegex.test(author['full_name'])) {
+ 	
+	_.each(authors, function(author) {
+	  var alreadyAdded = _.isUndefined(author.alreadyAdded) ? false : author.alreadyAdded;
+	  if (alreadyAdded === false && substrRegex.test(author['full_name'])) {
 	    matches.push(author);
 	  }
 	});
@@ -162,22 +172,27 @@ function substringMatcher(authors) {
 
 function addAuthor(author) {
 
+	author.alreadyAdded = true;
+
 	var existingAuthorTemplate = _.template($('#existing-author-template').html());
 	var newAuthorTemplate = _.template($('#new-author-template').html());
 	var $authorList = $('.author-list');
 		
-	var authorElement;
+	var elementContent;
 	if (author.isNewAuthor) {
 		var rawName = author.rawName.trim();
 		var authorData = splitFullNameIntoFirstLast(rawName);
 		authorData.newAuthorIndex = $authorList.find('.new-author').size();
 	
-		authorElement = newAuthorTemplate(authorData);
+		elementContent = newAuthorTemplate(authorData);
 	} else {
-		authorElement = existingAuthorTemplate(author);
+		elementContent = existingAuthorTemplate(author);
 	}
 	
-	$authorList.append(authorElement);
+	var $authorElement = $(elementContent);
+	$authorElement.data('author', author);
+	
+	$authorList.append($authorElement);
 	
 	$authorList.find('input[disabled]').prop('disabled', true);
 }
@@ -209,6 +224,10 @@ function removeAuthor(event) {
 		
 	var $btn = $(event.target);
 	var $authorElement = $btn.parents('.author-inputs');
+	
+	var author = $authorElement.data('author');
+	author.alreadyAdded = false;
+	
 	var isNewAuthor = $authorElement.hasClass('new-author');
 	
 	var $authorList = $authorElement.parents('.author-list');
