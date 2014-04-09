@@ -148,6 +148,16 @@ $(document).ready(function() {
 		$(this).typeahead('val', '');
 	});
 	$('.author-list').on('click', '.remove-author', removeAuthor);
+	
+	//don't submit if no authors added
+	$('#paper-upload-form').on('submit', function(ev) {
+		if ($('.author-inputs').size() === 0) {
+			ev.preventDefault();
+			$typeahead.focus();
+			
+			return;
+		}
+	});
 });
 
 function addInputsForExistingAuthors() {
