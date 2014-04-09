@@ -83,6 +83,14 @@ class TechReports {
 			return array();
 		}
 		$paper['file'] = $this->get_paper_url($paper);
+		
+		$authors_query = "SELECT author.* FROM paperAuthorAssoc INNER JOIN author 
+			ON paperAuthorAssoc.paper_id=$paper_id AND paperAuthorAssoc.author_id=author.author_id";
+		$paper['authors'] = $this->paper_db->get_results($authors_query, ARRAY_A);
+		if (is_null($paper['authors'])) {
+			$paper['authors'] = array();
+		}
+		
 		return $paper;
 	}
 	

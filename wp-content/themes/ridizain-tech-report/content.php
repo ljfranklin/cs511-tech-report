@@ -32,7 +32,20 @@
 			<tbody>
 				<tr>
 					<td>Author:</td>
-					<td><?php echo $paper['author']; ?></td>
+					<td>
+						<?php 
+							function getFullName($author) {
+								$full_name = $author['first_name'];
+								if (strlen($author['middle_name']) > 0) {
+									$full_name .= ' ' . $author['middle_name'];
+								}
+								$full_name .= ' ' . $author['last_name'];
+								return $full_name;
+							}
+							$full_names = array_map("getFullName", $paper['authors']);
+							echo implode(", ", $full_names); 
+						?>
+					</td>
 				</tr>
 				<tr>
 					<td>Publication Year:</td>
