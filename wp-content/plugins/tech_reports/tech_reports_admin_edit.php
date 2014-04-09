@@ -56,6 +56,10 @@
     	$authors = $tech_report->get_all_authors();
     	return json_encode($authors);
     };
+    
+    $get_paper_authors = function() use ($paper) {
+    	return json_encode($paper['authors']);
+    };
 ?>
 
 <?php $plugin_url = plugin_dir_url( __FILE__ ); ?>
@@ -86,7 +90,8 @@
 
 <script>
 
-var authors = <?php echo $get_authors(); ?>;
+var allAuthors = <?php echo $get_authors(); ?>;
+var paperAuthors = <?php echo $get_paper_authors(); ?>;
 
 $(document).ready(function() {
 
@@ -102,7 +107,7 @@ $(document).ready(function() {
 	  name: 'authors',
 	  displayKey: 'full_name',
 	  valueKey: 'author_id',
-	  source: substringMatcher(authors),
+	  source: substringMatcher(allAuthors),
 	  templates: {
 			empty: [
 			  '<div class="empty-message add-new-author">',
@@ -118,8 +123,14 @@ $(document).ready(function() {
 		  return false;
 		}
 	});
+	
+	_.each(paperAuthors, addAuthor);
 		
-	$typeahead.on('typeahead:selected', addAuthor);
+	$typeahead.on('typeahead:selected', function(e, author) {
+		e.preventDefault();
+		addAuthor(author);
+		$(this).typeahead('val', '');
+	});
 	$('.author-list').on('click', '.remove-author', removeAuthor);
 });
 
@@ -149,15 +160,11 @@ function substringMatcher(authors) {
   };
 };
 
-function addAuthor(e, author) {
-
-	e.preventDefault();
+function addAuthor(author) {
 
 	var existingAuthorTemplate = _.template($('#existing-author-template').html());
 	var newAuthorTemplate = _.template($('#new-author-template').html());
 	var $authorList = $('.author-list');
-	
-	$(this).typeahead('val', '');
 		
 	var authorElement;
 	if (author.isNewAuthor) {
@@ -176,7 +183,7 @@ function addAuthor(e, author) {
 }
 
 function formatAuthors() {
-	authors = _.each(authors, function(author) {
+	allAuthors = _.each(allAuthors, function(author) {
 		author['full_name'] = [author['first_name'], author['middle_name'], author['last_name']].join(' ');
 	});
 }
