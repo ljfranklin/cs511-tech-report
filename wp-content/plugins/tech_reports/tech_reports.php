@@ -91,6 +91,10 @@ class TechReports {
 			$paper['authors'] = array();
 		}
 		
+		foreach ($paper['authors'] as $key => $author) {
+			$paper['authors'][$key]['full_name'] = $this->get_author_fullname($author);
+		}
+		
 		return $paper;
 	}
 	
@@ -108,7 +112,20 @@ class TechReports {
 			$paper['authors'] = array();
 		}
 		
+		foreach ($paper['authors'] as $key => $author) {
+			$paper['authors'][$key]['full_name'] = $this->get_author_fullname($author);
+		}
+		
 		return $paper;
+	}
+	
+	private function get_author_fullname($author) {
+		$full_name = $author['first_name'];
+		if (strlen($author['middle_name']) > 0) {
+			$full_name .= ' ' . $author['middle_name'];
+		}
+		$full_name .= ' ' . $author['last_name'];
+		return $full_name;
 	}
 	
 	private function get_paper_filename($paper_id, $title=NULL) {
@@ -136,7 +153,20 @@ class TechReports {
 	}
 	
 	public function get_search_results($query_term) {
-		$paper_ids = $this->paper_db->get_col("SELECT paper_id FROM paper WHERE author LIKE '%$query_term%' OR title LIKE '%$query_term%' OR abstract LIKE '%$query_term%'");
+		
+		$search_query = "SELECT paper_id FROM paper 
+			WHERE title LIKE '%$query_term%' OR abstract LIKE '%$query_term%'
+			UNION
+			SELECT paper_id FROM paperAuthorAssoc
+			INNER JOIN author ON 
+			(
+				author.first_name LIKE '%$query_term%' OR
+				author.middle_name LIKE '%$query_term%' OR
+				author.last_name LIKE '%$query_term%'
+			) AND
+			paperAuthorAssoc.author_id=author.author_id";
+	
+		$paper_ids = $this->paper_db->get_col($search_query);
 		if ($paper_ids == NULL) {
 			return new WP_Query();
 		}
