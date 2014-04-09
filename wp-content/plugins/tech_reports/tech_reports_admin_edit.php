@@ -64,18 +64,20 @@
 <script src="<?php echo $plugin_url; ?>scripts/underscore-min.js"></script>
 <script src="<?php echo $plugin_url; ?>scripts/typeahead.bundle.js"></script>
 <script id="existing-author-template" type="text/template">
-   <div class="existing-author">
+   <div class="author-inputs existing-author">
        <input type="hidden" name="existing-authors[]" value="<%= author_id %>">
    	   <input type="text" value="<%= first_name %>" disabled>
        <input type="text" value="<%= middle_name %>" disabled>
        <input type="text" value="<%= last_name %>" disabled>
+       <button class="remove-author">X</button>
    </div>
 </script>
 <script id="new-author-template" type="text/template">
-   <div class="new-author">
+   <div class="author-inputs new-author">
        <input type="text" name="new-author[<%= newAuthorIndex %>][first_name]" value="<%= first_name %>" placeholder="First name" required>
        <input type="text" name="new-author[<%= newAuthorIndex %>][middle_name]" value="<%= middle_name %>" placeholder="Middle name">
        <input type="text" name="new-author[<%= newAuthorIndex %>][last_name]" value="<%= last_name %>" placeholder="Last name" required>
+       <button class="remove-author">X</button>
    </div>
 </script>
 
@@ -136,6 +138,28 @@ $(document).ready(function() {
 		$authorList.append(authorElement);
 		
 		$authorList.find('input[disabled]').prop('disabled', true);
+	});
+	
+	$authorList.on('click', '.remove-author', function(event) {
+		event.preventDefault();
+		
+		var $btn = $(event.target);
+		var $authorElement = $btn.parents('.author-inputs');
+		var isNewAuthor = $authorElement.hasClass('new-author');
+		$authorElement.remove();
+		
+		//update new author indexes
+		if (isNewAuthor) {
+			$authorList.find('.new-author').each(function(authorIndex, authorDiv) {
+				var $author = $(authorDiv);
+				$author.find('input').each(function(i, input) {
+					var $input = $(input);
+					var originalName = $input.attr('name');
+					var newName = originalName.replace(/\[\d+\]/, '\[' + authorIndex + '\]');
+					$input.attr('name', newName);
+				});
+			});
+		}
 	});
 });
 
