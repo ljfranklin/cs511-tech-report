@@ -70,7 +70,7 @@
 
 <script src="<?php echo $plugin_url; ?>scripts/jquery-2.1.0.min.js"></script>
 <script src="<?php echo $plugin_url; ?>scripts/underscore-min.js"></script>
-<script src="<?php echo $plugin_url; ?>scripts/typeahead.bundle.js"></script>
+<script src="<?php echo $plugin_url; ?>scripts/typeahead.bundle.min.js"></script>
 <script id="existing-author-template" type="text/template">
    <div class="author-inputs existing-author">
        <input type="hidden" name="existing_authors[]" value="<%= author_id %>">
