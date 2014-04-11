@@ -6,5 +6,5 @@ input[disabled], select[disabled] {
 }
 
 .author-list:empty:after {
-	content: "No authors";
+	content: "Add authors from the search bar above.";
 }

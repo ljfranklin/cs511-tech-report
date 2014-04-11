@@ -298,14 +298,11 @@ function removeAuthor(event) {
 				</tr>
 				<tr>
 					<th>
-						<label for="paper_author">Author:</label>
+						<label for="paper_author">Author(s):</label>
 					</th>
 					<td>
 						<div class="typeahead-container scrollable-dropdown-menu has-empty-option">
 							<input class="typeahead" type="text" placeholder="Search Author Names">
-						</div>
-						<div>
-							Author(s):
 						</div>
 						<div class="author-list"></div>
 					</td>
