@@ -2,11 +2,13 @@
 
 	$tech_report = new TechReports();
 
+	$new_authors = isset($_POST['new_authors']) ? $_POST['new_authors'] : array();
+   	$existing_authors = isset($_POST['existing_authors']) ? $_POST['existing_authors'] : array();
     if(isset($_POST['action']) && $_POST['action'] == 'create') {
-    	
     	$values = array(
     		'title' => $_POST['paper_title'],
-    		'author' => $_POST['paper_author'],
+    		'existing_authors' => $existing_authors,
+    		'new_authors' => $new_authors,
     		'abstract' => $_POST['paper_abstract'],
     		'year' => $_POST['paper_year'],
     		'type' => $_POST['paper_type'],
@@ -21,7 +23,8 @@
     	$values = array(
     		'paper_id' => $_POST['paper_id'],
     		'title' => $_POST['paper_title'],
-    		'author' => $_POST['paper_author'],
+    		'existing_authors' => $_POST['existing_authors'],
+    		'new_authors' => $_POST['new_authors'],
     		'abstract' => $_POST['paper_abstract'],
     		'year' => $_POST['paper_year'],
     		'type' => $_POST['paper_type'],
@@ -48,7 +51,89 @@
     		return "";
     	}
     };
+    
+    $get_authors = function() use ($tech_report) {
+    	$authors = $tech_report->get_all_authors();
+    	return json_encode($authors);
+    };
+    
+    $get_paper_authors = function() use ($paper) {
+    	$authors = isset($paper['authors']) ? $paper['authors'] : array();
+    	return json_encode($authors);
+    };
 ?>
+
+<?php $plugin_url = plugin_dir_url( __FILE__ ); ?>
+
+<link href="<?php echo $plugin_url; ?>scripts/typeahead.css" rel="stylesheet" type="text/css">
+<link href="<?php echo $plugin_url; ?>styles/styles.css" rel="stylesheet" type="text/css">
+
+<script src="<?php echo $plugin_url; ?>scripts/jquery-2.1.0.min.js"></script>
+<script src="<?php echo $plugin_url; ?>scripts/underscore-min.js"></script>
+<script src="<?php echo $plugin_url; ?>scripts/typeahead.bundle.min.js"></script>
+<script id="existing-author-template" type="text/template">
+   <div class="author-inputs existing-author">
+       <input type="hidden" name="existing_authors[]" value="<%= author_id %>">
+   	   <input type="text" value="<%= first_name %>" disabled>
+       <input type="text" value="<%= middle_name %>" disabled>
+       <input type="text" value="<%= last_name %>" disabled>
+       <select value="<%= suffix %>" disabled>
+           <option value=""></option>
+           <option value="jr">Jr</option>
+           <option value="sr">Sr</option>
+           <option value="ii">II</option>
+           <option value="iii">III</option>
+           <option value="iv">IV</option>
+       </select>
+       <button class="remove-author">X</button>
+   </div>
+</script>
+<script id="new-author-template" type="text/template">
+   <div class="author-inputs new-author">
+       <input type="text" name="new_authors[<%= newAuthorIndex %>][first_name]" value="<%= first_name %>" placeholder="First name" required>
+       <input type="text" name="new_authors[<%= newAuthorIndex %>][middle_name]" value="<%= middle_name %>" placeholder="Middle name (optional)">
+       <input type="text" name="new_authors[<%= newAuthorIndex %>][last_name]" value="<%= last_name %>" placeholder="Last name" required>
+       <select name="new_authors[<%= newAuthorIndex %>][suffix]">
+           <option value=""></option>
+           <option value="jr">Jr</option>
+           <option value="sr">Sr</option>
+           <option value="ii">II</option>
+           <option value="iii">III</option>
+           <option value="iv">IV</option>
+       </select>
+       <button class="remove-author">X</button>
+   </div>
+</script>
+<script src="<?php echo $plugin_url; ?>scripts/authors.typeahead.js"></script>
+
+<script>
+
+var allAuthors = <?php echo $get_authors(); ?>;
+var paperAuthors = <?php echo $get_paper_authors(); ?>;
+
+$(document).ready(function() {
+	var authors = new AuthorsTypeahead({
+		$el: $('.typeahead'),
+		$authorList: $('.author-list'),
+		existingAuthorTemplate: $('#existing-author-template').html(),
+		newAuthorTemplate: $('#new-author-template').html(),
+		allAuthors: allAuthors,
+		paperAuthors: paperAuthors
+	});
+	
+	//don't submit if no authors added
+	$('#paper-upload-form').on('submit', function(ev) {
+		if (authors.count() === 0) {
+			ev.preventDefault();
+			$('.typeahead').focus();
+			
+			return;
+		}
+	});
+});
+
+
+</script>
 
 <div class="wrap">
 	<h2>Upload a Research Paper</h2>
@@ -70,10 +155,13 @@
 				</tr>
 				<tr>
 					<th>
-						<label for="paper_author">Author:</label>
+						<label for="paper_author">Author(s):</label>
 					</th>
 					<td>
-						<input type="text" id="paper_author" name="paper_author" size="30" value="<?php echo $get_existing_value('author') ?>" required/>
+						<div class="typeahead-container scrollable-dropdown-menu has-empty-option">
+							<input class="typeahead" type="text" placeholder="Search Author Names">
+						</div>
+						<div class="author-list"></div>
 					</td>
 				</tr>
 				<tr>

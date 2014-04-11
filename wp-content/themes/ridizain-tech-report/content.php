@@ -17,7 +17,15 @@
 
 	<?php 
 		$tech_report = new TechReports();
-		$paper = $tech_report->get_paper_for_post(get_the_ID());	
+		$paper = $tech_report->get_paper_for_post(get_the_ID());
+		
+		$get_full_names = function($authors) use ($tech_report) {
+			$full_names = array();
+			foreach ($authors as $author) {
+				array_push($full_names, $author['full_name']);
+			}
+			return $full_names;						
+		}	
 	?>
 
 	<header class="entry-header">
@@ -32,7 +40,12 @@
 			<tbody>
 				<tr>
 					<td>Author:</td>
-					<td><?php echo $paper['author']; ?></td>
+					<td>
+						<?php 
+							$full_names = $get_full_names($paper['authors']);
+							echo implode(", ", $full_names); 
+						?>
+					</td>
 				</tr>
 				<tr>
 					<td>Publication Year:</td>

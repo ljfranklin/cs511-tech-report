@@ -57,12 +57,32 @@ class TechReports {
 		if($paper_db->get_var("SHOW TABLES LIKE 'paper'") !== 'paper') {
 			$sql = "CREATE TABLE paper (
 				paper_id INT NOT NULL AUTO_INCREMENT, 
-				title TEXT NOT NULL, 
-				author VARCHAR(40) NOT NULL, 
+				title TEXT NOT NULL,
 				abstract TEXT NOT NULL,
 				publication_year YEAR NOT NULL,
 				type VARCHAR(40) NOT NULL,
 				PRIMARY KEY (paper_id)
+				);";
+			$paper_db->query($sql);
+		}
+		if($paper_db->get_var("SHOW TABLES LIKE 'author'") !== 'author') {
+			$sql = "CREATE TABLE author (
+				author_id INT NOT NULL AUTO_INCREMENT,
+				first_name TEXT NOT NULL, 
+				middle_name TEXT NULL, 
+				last_name TEXT NOT NULL,
+				suffix VARCHAR(10) NULL,
+				PRIMARY KEY (author_id)
+				);";
+			$paper_db->query($sql);
+		}
+		if($paper_db->get_var("SHOW TABLES LIKE 'paperAuthorAssoc'") !== 'paperAuthorAssoc') {
+			$sql = "CREATE TABLE paperAuthorAssoc (
+				author_id INT NOT NULL,
+				paper_id INT NOT NULL,
+				PRIMARY KEY (author_id, paper_id),
+				FOREIGN KEY (author_id) REFERENCES author(author_id),
+				FOREIGN KEY (paper_id) REFERENCES paper(paper_id)
 				);";
 			$paper_db->query($sql);
 		}
@@ -111,6 +131,18 @@ class TechReports {
 			return array();
 		}
 		$paper['file'] = $this->get_paper_url($paper);
+		
+		$authors_query = "SELECT author.* FROM paperAuthorAssoc INNER JOIN author 
+			ON paperAuthorAssoc.paper_id=$paper_id AND paperAuthorAssoc.author_id=author.author_id";
+		$paper['authors'] = $this->paper_db->get_results($authors_query, ARRAY_A);
+		if (is_null($paper['authors'])) {
+			$paper['authors'] = array();
+		}
+		
+		foreach ($paper['authors'] as $key => $author) {
+			$paper['authors'][$key]['full_name'] = $this->get_author_fullname($author);
+		}
+		
 		return $paper;
 	}
 	
@@ -120,7 +152,31 @@ class TechReports {
 			return array();
 		}
 		$paper['file'] = $this->get_paper_url($paper);
+		
+		$authors_query = "SELECT author.* FROM paperAuthorAssoc INNER JOIN author 
+			ON paperAuthorAssoc.paper_id=$paper_id AND paperAuthorAssoc.author_id=author.author_id";
+		$paper['authors'] = $this->paper_db->get_results($authors_query, ARRAY_A);
+		if (is_null($paper['authors'])) {
+			$paper['authors'] = array();
+		}
+		
+		foreach ($paper['authors'] as $key => $author) {
+			$paper['authors'][$key]['full_name'] = $this->get_author_fullname($author);
+		}
+		
 		return $paper;
+	}
+	
+	private function get_author_fullname($author) {
+		$full_name = $author['first_name'];
+		if (strlen($author['middle_name']) > 0) {
+			$full_name .= ' ' . $author['middle_name'];
+		}
+		$full_name .= ' ' . $author['last_name'];
+		if (strlen($author['suffix']) > 0) {
+			$full_name .= ' ' . strtoupper($author['suffix']);
+		}
+		return $full_name;
 	}
 	
 	private function get_paper_filename($paper_id, $title=NULL) {
@@ -148,7 +204,20 @@ class TechReports {
 	}
 	
 	public function get_search_results($query_term) {
-		$paper_ids = $this->paper_db->get_col("SELECT paper_id FROM paper WHERE author LIKE '%$query_term%' OR title LIKE '%$query_term%' OR abstract LIKE '%$query_term%'");
+		
+		$search_query = "SELECT paper_id FROM paper 
+			WHERE title LIKE '%$query_term%' OR abstract LIKE '%$query_term%'
+			UNION
+			SELECT paper_id FROM paperAuthorAssoc
+			INNER JOIN author ON 
+			(
+				author.first_name LIKE '%$query_term%' OR
+				author.middle_name LIKE '%$query_term%' OR
+				author.last_name LIKE '%$query_term%'
+			) AND
+			paperAuthorAssoc.author_id=author.author_id";
+	
+		$paper_ids = $this->paper_db->get_col($search_query);
 		if ($paper_ids == NULL) {
 			return new WP_Query();
 		}
@@ -182,7 +251,12 @@ class TechReports {
 		wp_delete_post($post_id, true);
 		
 		unlink($this->get_paper_filename($paper_id));
-		$this->paper_db->delete( 'paper', array( 'paper_id' => $paper_id ));	
+		
+		$this->paper_db->delete( 'paperAuthorAssoc', array( 'paper_id' => $paper_id ));
+		$this->paper_db->delete( 'paper', array( 'paper_id' => $paper_id ));
+		
+		//delete authors not tied to paper
+		$this->paper_db->query("DELETE FROM author WHERE author_id NOT IN (SELECT author_id FROM paperAuthorAssoc)");
 	}
 
 	public function delete_multiple_papers($paper_ids) {
@@ -203,8 +277,12 @@ class TechReports {
 		
 		foreach ($paper_ids as $paper_id){
 			unlink($this->get_paper_filename($paper_id));
-			$this->paper_db->delete( 'paper', array( 'paper_id' => $paper_id ));	
+			$this->paper_db->delete( 'paperAuthorAssoc', array( 'paper_id' => $paper_id ));
+			$this->paper_db->delete( 'paper', array( 'paper_id' => $paper_id ));
 		}
+		
+		//delete authors not tied to paper
+		$this->paper_db->query("DELETE FROM author WHERE author_id NOT IN (SELECT author_id FROM paperAuthorAssoc)");
 	}
 	
 	public function get_all_papers() {
@@ -250,7 +328,6 @@ class TechReports {
 			'paper', 
 			array( 
 				'title' => $values['title'],
-				'author' => $values['author'],
 				'abstract' => $values['abstract'],
 				'type' => $values['type'],
 				'publication_year' => $values['year']
@@ -264,6 +341,44 @@ class TechReports {
 			) 
 		);
 		$paper_id = $this->paper_db->insert_id;
+		
+		$author_ids = $values['existing_authors'];
+		
+		//Insert new authors
+		foreach ($values['new_authors'] as $new_author) {
+			$this->paper_db->insert(
+				'author',
+				array(
+					'first_name' => $new_author['first_name'],
+					'middle_name' => $new_author['middle_name'],
+					'last_name' => $new_author['last_name'],
+					'suffix' => $new_author['suffix']
+				),
+				array(
+					'%s',
+					'%s',
+					'%s',
+					'%s'
+				)
+			);
+			$new_author_id = $this->paper_db->insert_id;
+			array_push($author_ids, $new_author_id);
+		}
+		
+		//Add association between papers and authors
+		foreach ($author_ids as $author_id) {
+			$this->paper_db->insert(
+				'paperAuthorAssoc',
+				array(
+					'paper_id' => $paper_id,
+					'author_id' => $author_id
+				),
+				array(
+					'%d',
+					'%d'
+				)
+			);
+		}
 		
 		$user_id = get_current_user_id();
 		$new_post = array(
@@ -321,7 +436,6 @@ class TechReports {
 			'paper', 
 			array( 
 				'title' => $title,
-				'author' => $new_values['author'],
 				'abstract' => $new_values['abstract'],
 				'type' => $new_values['type'],
 				'publication_year' => $new_values['year']
@@ -333,13 +447,78 @@ class TechReports {
 				'%s',
 				'%s',
 				'%s',
-				'%s',
 				'%d'
 			),
 			array(
 				'%d'
 			)
 		);
+		
+		$author_ids = $new_values['existing_authors'];
+		
+		//Insert new authors
+		foreach ($new_values['new_authors'] as $new_author) {
+			$this->paper_db->insert(
+				'author',
+				array(
+					'first_name' => $new_author['first_name'],
+					'middle_name' => $new_author['middle_name'],
+					'last_name' => $new_author['last_name'],
+					'suffix' => $new_author['suffix']
+				),
+				array(
+					'%s',
+					'%s',
+					'%s',
+					'%s'
+				)
+			);
+			$new_author_id = $this->paper_db->insert_id;
+			array_push($author_ids, $new_author_id);
+		}
+		
+		$already_added_authors = $this->paper_db->get_col("SELECT author_id FROM paperAuthorAssoc WHERE paper_id=$paper_id");
+		
+		//Add association between papers and authors
+		foreach ($author_ids as $author_id) {
+			
+			$already_added = in_array($author_id, $already_added_authors);
+		
+			if ($already_added === false) {
+				$this->paper_db->insert(
+					'paperAuthorAssoc',
+					array(
+						'paper_id' => $paper_id,
+						'author_id' => $author_id
+					),
+					array(
+						'%d',
+						'%d'
+					)
+				);
+			}
+		}
+		
+		foreach ($already_added_authors as $author_id) {
+			$author_removed = (in_array($author_id, $author_ids) === false);
+		
+			if ($author_removed) {
+				$this->paper_db->delete(
+					'paperAuthorAssoc',
+					array(
+						'paper_id' => $paper_id,
+						'author_id' => $author_id
+					),
+					array(
+						'%d',
+						'%d'
+					)
+				);
+			}
+		}
+		
+		//delete authors not tied to paper
+		$this->paper_db->query("DELETE FROM author WHERE author_id NOT IN (SELECT author_id FROM paperAuthorAssoc)");
 
 		$query = "SELECT wposts.ID
 			FROM ".$wpdb->posts." AS wposts
@@ -367,6 +546,16 @@ class TechReports {
 		} 
 		
 		return $post_id;
+    }
+    
+    public function get_all_authors() {
+    	$query = "SELECT author_id, first_name, middle_name, last_name, suffix FROM author ORDER BY first_name ASC";
+    	$results = $this->paper_db->get_results($query, ARRAY_A);
+    	foreach ($results as $key => $author) {
+    		$results[$key]['full_name'] = $this->get_author_fullname($author);
+    	}
+    	
+    	return $results;
     }
 }
 

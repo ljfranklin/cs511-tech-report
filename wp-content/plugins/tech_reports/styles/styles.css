@@ -1,0 +1,10 @@
+
+input[disabled], select[disabled] {
+	cursor: not-allowed;
+	background-color: #eee;
+	opacity: 1;
+}
+
+.author-list:empty:after {
+	content: "Add authors from the search bar above.";
+}
