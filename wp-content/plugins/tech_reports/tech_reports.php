@@ -29,9 +29,11 @@ class TechReports {
 
 		// Xiaoran
 		add_shortcode( 'List_Paper_By_Type', array('TechReports', 'tech_reports_guest_view_paper_by_type') );
+		//$pages = get_pages();
+		//foreach ($pages as $page) wp_delete_post($page,true);
+
 		$page['post_type']    = 'page';
 		$page['post_content'] = '\[List_Paper_By_Author_Name\]';
-		//$page['post_content'] = 'fetch';
 		$page['post_parent']  = 0;
 		$page['post_status']  = 'publish';
 		$page['post_title']   = 'List Paper By Authro Name';
@@ -44,18 +46,12 @@ class TechReports {
 		$page1['post_title']   = 'List Paper By Year';
 		$pageid1=wp_insert_post ($page1);
 
-		$page2['post_type']    = 'page';
-		$page2['post_content'] = '\[List_Paper_By_Type\]';
-		$page2['post_parent']  = 0;
-		$page2['post_status']  = 'publish';
-		$page2['post_title']   = 'List Paper By Type';
-		$pageid2=wp_insert_post ($page2);
 	}
 
 	private static function create_plugin_table() {
 		$paper_db = new wpdb("wordpress", "wp1234", "tech_papers", "localhost");
 		if($paper_db->get_var("SHOW TABLES LIKE 'paper'") !== 'paper') {
-			$sql = "CREATE TABLE paper (
+			$sql = "CREATE TABLE if not exists paper (
 				paper_id INT NOT NULL AUTO_INCREMENT, 
 				title TEXT NOT NULL,
 				abstract TEXT NOT NULL,
@@ -77,7 +73,7 @@ class TechReports {
 			$paper_db->query($sql);
 		}
 		if($paper_db->get_var("SHOW TABLES LIKE 'paperAuthorAssoc'") !== 'paperAuthorAssoc') {
-			$sql = "CREATE TABLE paperAuthorAssoc (
+			$sql = "CREATE TABLE if not exists paperAuthorAssoc (
 				author_id INT NOT NULL,
 				paper_id INT NOT NULL,
 				PRIMARY KEY (author_id, paper_id),
@@ -290,9 +286,16 @@ class TechReports {
 		return $this->paper_db->get_results($query);
 	}
 
-	//Zongmin Sun
-	public function get_all_papers_by_author_name($c){
-		$query = "SELECT * FROM paper where author like '$c%' order by author";
+	public function get_authors_by_initial($au){
+		$query = "SELECT * FROM author where last_name like '$au%' order by last_name";
+		return $this->paper_db->get_results($query,ARRAY_A);
+	}
+	public function get_author_paper_amount($au){
+		$query = "select count(paper_id) from paperAuthorAssoc where author_id=".$au['author_id'];
+		return $this->paper_db->get_var($query);
+	}
+	public function get_author_papers($au){
+		$query= "select * from paper inner join paperAuthorAssoc on paperAuthorAssoc.paper_id=".$au;
 		return $this->paper_db->get_results($query);
 	}
 
@@ -553,8 +556,7 @@ class TechReports {
     	$results = $this->paper_db->get_results($query, ARRAY_A);
     	foreach ($results as $key => $author) {
     		$results[$key]['full_name'] = $this->get_author_fullname($author);
-    	}
-    	
+    	}	
     	return $results;
     }
 }
