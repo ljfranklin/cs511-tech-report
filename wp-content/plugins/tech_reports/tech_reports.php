@@ -22,6 +22,7 @@ class TechReports {
 	public static function plugin_setup() {
 		self::create_plugin_table();
 		self::create_upload_directory();
+		self::activate_theme();
 		//zongmin
 		add_shortcode( 'List_Paper_By_Author_Name', array('TechReports', 'tech_reports_guest_view_paper_by_author_name') );
 
@@ -94,6 +95,10 @@ class TechReports {
 		if (!file_exists($upload_path)) {
     		mkdir($upload_path, 0775);
 		}
+	}
+	
+	private static function activate_theme() {
+		switch_theme('ridizain-tech-report');
 	}
 
 	public static function tech_reports_admin_edit() {
