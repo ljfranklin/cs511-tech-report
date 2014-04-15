@@ -295,8 +295,9 @@ class TechReports {
 		return $this->paper_db->get_var($query);
 	}
 	public function get_author_papers($au){
-		$query= "select * from paper inner join paperAuthorAssoc on paperAuthorAssoc.paper_id=".$au;
-		return $this->paper_db->get_results($query);
+		//$query= "select * from paper inner join paperAuthorAssoc on paperAuthorAssoc.author_id=".$au;
+		$query="select * from paper where paper_id in (select paper_id from paperAuthorAssoc where author_id=".$au.")";
+		return $this->paper_db->get_results($query,ARRAY_A);
 	}
 
 	//song Teng 

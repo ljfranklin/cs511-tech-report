@@ -22,7 +22,12 @@ foreach ($initials as $initial):
 		.$tech_report->get_author_fullname($author)
 		."(".$tech_report->get_author_paper_amount($author).")"
 		. "</a>";
-		echo "<br/><br/><p style=\"display: none ; color:black;\" id=\"detail".$author['author_id']."\">".$author['first_name']."</p>";
+		echo "<br/><br/><p style=\"display: none ; color:black;\" id=\"detail".$author['author_id']."\">";
+		$author_papers=$tech_report->get_author_papers($author['author_id']);
+		foreach($author_papers as $au_pa):
+		echo $au_pa['title']."<br/>";
+		endforeach;
+		echo "</p>";
 		echo "</td></tr>";
 	endforeach;
 	echo "<tbody></table>";
