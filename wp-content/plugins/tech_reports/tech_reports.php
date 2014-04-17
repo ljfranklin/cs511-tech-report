@@ -37,14 +37,14 @@ class TechReports {
 		$page['post_content'] = '\[List_Paper_By_Author_Name\]';
 		$page['post_parent']  = 0;
 		$page['post_status']  = 'publish';
-		$page['post_title']   = 'List Paper By Authro Name';
+		$page['post_title']   = 'List Papers By Author Name';
 		$pageid=wp_insert_post ($page);
 
 		$page1['post_type']    = 'page';
 		$page1['post_content'] = '\[List_Paper_By_Year\]';
 		$page1['post_parent']  = 0;
 		$page1['post_status']  = 'publish';
-		$page1['post_title']   = 'List Paper By Year';
+		$page1['post_title']   = 'List Papers By Year';
 		$pageid1=wp_insert_post ($page1);
 
 	}
