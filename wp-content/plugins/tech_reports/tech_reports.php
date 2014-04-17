@@ -7,15 +7,11 @@
 class TechReports {
 
 	private $paper_db;
-	private $paper_values = NULL;
-
-	// Xiaoran
 	private $post_db;
+	private $paper_values = NULL;
 
 	function __construct($paper_id=NULL) {
 		$this->paper_db = new wpdb("wordpress", "wp1234", "tech_papers", "localhost");
-
-		// Xiaoran
 		$this->post_db = new wpdb("wordpress", "wp1234", "wordpress", "localhost");
 	}
 	
@@ -23,32 +19,10 @@ class TechReports {
 		self::create_plugin_table();
 		self::create_upload_directory();
 		self::activate_theme();
-		add_action('update_option_active_plugins', array('TechReports','activate_extra_plugins'));
+		self::add_by_authors_page();
+		self::add_by_year_page();
 		
-		//zongmin
-		add_shortcode( 'List_Paper_By_Author_Name', array('TechReports', 'tech_reports_guest_view_paper_by_author_name') );
-
-		add_shortcode( 'List_Paper_By_Year', array('TechReports', 'tech_reports_guest_view_paper_by_year') );
-
-		// Xiaoran
-		add_shortcode( 'List_Paper_By_Type', array('TechReports', 'tech_reports_guest_view_paper_by_type') );
-		//$pages = get_pages();
-		//foreach ($pages as $page) wp_delete_post($page,true);
-
-		$page['post_type']    = 'page';
-		$page['post_content'] = '\[List_Paper_By_Author_Name\]';
-		$page['post_parent']  = 0;
-		$page['post_status']  = 'publish';
-		$page['post_title']   = 'List Papers By Author Name';
-		$pageid=wp_insert_post ($page);
-
-		$page1['post_type']    = 'page';
-		$page1['post_content'] = '\[List_Paper_By_Year\]';
-		$page1['post_parent']  = 0;
-		$page1['post_status']  = 'publish';
-		$page1['post_title']   = 'List Papers By Year';
-		$pageid1=wp_insert_post ($page1);
-
+		add_action('update_option_active_plugins', array('TechReports','activate_extra_plugins'));
 	}
 
 	private static function create_plugin_table() {
@@ -85,6 +59,40 @@ class TechReports {
 				);";
 			$paper_db->query($sql);
 		}
+	}
+	
+	private static function add_by_authors_page() {
+		add_shortcode( 'List_Paper_By_Author_Name', array('TechReports', 'tech_reports_guest_view_paper_by_author_name') );
+
+		if (get_page_by_title('List Papers By Author Name') == NULL) {
+			$page['post_type']    = 'page';
+			$page['post_content'] = '\[List_Paper_By_Author_Name\]';
+			$page['post_parent']  = 0;
+			$page['post_status']  = 'publish';
+			$page['post_title']   = 'List Papers By Author Name';
+			wp_insert_post ($page);
+		}
+	}
+	
+	private static function add_by_year_page() {
+		add_shortcode( 'List_Paper_By_Year', array('TechReports', 'tech_reports_guest_view_paper_by_year') );
+
+		if (get_page_by_title('List Papers By Year') == NULL) {
+			$page1['post_type']    = 'page';
+			$page1['post_content'] = '\[List_Paper_By_Year\]';
+			$page1['post_parent']  = 0;
+			$page1['post_status']  = 'publish';
+			$page1['post_title']   = 'List Papers By Year';
+			wp_insert_post ($page1);
+		}
+	}
+	
+	public static function tech_reports_guest_view_paper_by_author_name () {
+		include('tech_reports_guest_view_paper_by_author_name.php');	
+	}
+
+	public static function tech_reports_guest_view_paper_by_year() {
+		include('tech_reports_guest_view_paper_by_year.php');	
 	}
 	
 	private static function create_upload_directory() {
@@ -127,20 +135,6 @@ class TechReports {
 	
 	public static function tech_reports_admin_list() {
 		include('tech_reports_admin_list.php');	
-	}
-
-	//zongmin
-	public static function tech_reports_guest_view_paper_by_author_name () {
-		include('tech_reports_guest_view_paper_by_author_name.php');	
-	}
-
-	// Xiaoran
-	public static function tech_reports_guest_view_paper_by_type() {
-		include('tech_reports_guest_view_paper_by_type.php');	
-	}
-
-	public static function tech_reports_guest_view_paper_by_year() {
-		include('tech_reports_guest_view_paper_by_year.php');	
 	}
 
 	public static function tech_reports_admin_actions() {
