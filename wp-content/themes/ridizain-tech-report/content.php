@@ -25,7 +25,21 @@
 				array_push($full_names, $author['full_name']);
 			}
 			return $full_names;						
-		}	
+		};
+                $generate_citation = function() use ($paper) {
+                       $citation = "";
+                       $authors = $paper['authors'];
+                       $num_authors = count($authors);
+                       $citation .= $authors[0]['first_name'] . " " . $authors[0]['last_name'];
+                       for ($i=1;$i<$num_authors-1;$i++) {
+                           $author = $authors[$i];
+                           $citation .= ", " . $author['first_name'] . " " . $author['last_name'];
+                       }
+                       $citation .= " and " . $authors[$num_authors-1]['first_name'] . " " . $authors[$num_authors-1]['last_name'];
+                       $citation .= ", \" " . $paper['title'] . "\", ";
+                       $citation .=  $paper['publication_year'] . ".";
+                       return $citation;
+                };
 	?>
 
 	<header class="entry-header">
@@ -73,6 +87,10 @@
 	</div><!-- .entry-summary -->
 	<?php else : ?>
 	<div class="entry-content">
+                <div>Citation:</div>
+                <p class="paper_citation">
+                        <?php echo $generate_citation(); ?>
+                </p>
 		<div>Abstract:</div>
 		<p class="paper_abstract">
 			<?php echo $paper['abstract']; ?>
