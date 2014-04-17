@@ -23,6 +23,8 @@ class TechReports {
 		self::create_plugin_table();
 		self::create_upload_directory();
 		self::activate_theme();
+		add_action('update_option_active_plugins', array('TechReports','activate_extra_plugins'));
+		
 		//zongmin
 		add_shortcode( 'List_Paper_By_Author_Name', array('TechReports', 'tech_reports_guest_view_paper_by_author_name') );
 
@@ -95,6 +97,28 @@ class TechReports {
 	
 	private static function activate_theme() {
 		switch_theme('ridizain-tech-report');
+	}
+	
+	public static function activate_extra_plugins() {
+	
+		require_once(ABSPATH . 'wp-admin/includes/plugin.php');
+		
+		self::activate_disable_comments();
+		self::activate_dashboard_plugin();
+	}
+
+	private static function activate_disable_comments(){
+		$plugin_full_path = ABSPATH . 'wp-content/plugins/disable-comments/disable-comments.php';
+		if(is_plugin_inactive($plugin_full_path)) {
+			activate_plugin($plugin_full_path);
+		}
+	}
+	
+	private static function activate_dashboard_plugin() {
+		$plugin_full_path = ABSPATH . 'wp-content/plugins/Delete/delete.php';
+		if(is_plugin_inactive($plugin_full_path)) {
+			activate_plugin($plugin_full_path);
+		}
 	}
 
 	public static function tech_reports_admin_edit() {
