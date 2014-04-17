@@ -331,9 +331,9 @@ class TechReports {
         $this->paper_db->insert( 
 			'paper', 
 			array( 
-				'title' => $values['title'],
-				'abstract' => $values['abstract'],
-				'type' => $values['type'],
+				'title' => trim($values['title']),
+				'abstract' => trim($values['abstract']),
+				'type' => trim($values['type']),
 				'publication_year' => $values['year']
 			), 
 			array( 
@@ -353,10 +353,10 @@ class TechReports {
 			$this->paper_db->insert(
 				'author',
 				array(
-					'first_name' => $new_author['first_name'],
-					'middle_name' => $new_author['middle_name'],
-					'last_name' => $new_author['last_name'],
-					'suffix' => $new_author['suffix']
+					'first_name' => trim($new_author['first_name']),
+					'middle_name' => trim($new_author['middle_name']),
+					'last_name' => trim($new_author['last_name']),
+					'suffix' => trim($new_author['suffix'])
 				),
 				array(
 					'%s',
@@ -386,7 +386,7 @@ class TechReports {
 		
 		$user_id = get_current_user_id();
 		$new_post = array(
-			'post_title' => $values['title'],
+			'post_title' => trim($values['title']),
 			'post_content' => '',
 			'post_status' => 'publish',
 			'post_date' => date('Y-m-d H:i:s'),
@@ -397,7 +397,7 @@ class TechReports {
 		$post_id = wp_insert_post($new_post);
 		add_post_meta($post_id, 'paper_id', $paper_id);
 		
-		$this->process_file_upload($paper_id, $values['title'], $values['file']);
+		$this->process_file_upload($paper_id, trim($values['title']), $values['file']);
 		
 		return $post_id;
     }
@@ -435,13 +435,13 @@ class TechReports {
 	    global $wpdb;
         
         $paper_id = $new_values['paper_id'];
-        $title = $new_values['title'];
+        $title = trim($new_values['title']);
         $this->paper_db->update( 
 			'paper', 
 			array( 
 				'title' => $title,
-				'abstract' => $new_values['abstract'],
-				'type' => $new_values['type'],
+				'abstract' => trim($new_values['abstract']),
+				'type' => trim($new_values['type']),
 				'publication_year' => $new_values['year']
 			), 
 			array(
@@ -465,10 +465,10 @@ class TechReports {
 			$this->paper_db->insert(
 				'author',
 				array(
-					'first_name' => $new_author['first_name'],
-					'middle_name' => $new_author['middle_name'],
-					'last_name' => $new_author['last_name'],
-					'suffix' => $new_author['suffix']
+					'first_name' => trim($new_author['first_name']),
+					'middle_name' => trim($new_author['middle_name']),
+					'last_name' => trim($new_author['last_name']),
+					'suffix' => trim($new_author['suffix'])
 				),
 				array(
 					'%s',
