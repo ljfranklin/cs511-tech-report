@@ -21,6 +21,7 @@ class TechReports {
 		self::activate_theme();
 		self::add_by_authors_page();
 		self::add_by_year_page();
+		self::update_blog_description();
 		
 		add_action('update_option_active_plugins', array('TechReports','activate_extra_plugins'));
 	}
@@ -59,6 +60,10 @@ class TechReports {
 				);";
 			$paper_db->query($sql);
 		}
+	}
+	
+	private static function update_blog_description() {
+		update_option('blogdescription', 'A system for the storage of research papers from CSSE');
 	}
 	
 	private static function add_by_authors_page() {
