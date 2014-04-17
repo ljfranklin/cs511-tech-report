@@ -15,3 +15,49 @@
 .read-more.button {
 	margin: 0;
 }
+
+#secondary {
+	display:none;
+}
+
+#content {
+	max-width: 960px;
+	margin: auto;
+}
+
+.nav-menu .page_item {
+	margin-left: 10px;
+}
+
+.nav-menu .page_item a {
+	background-color: #990000;
+	color: #FFCC00;
+}
+.nav-menu > ul > .page_item > a:hover, .nav-menu .page_item.current_page_item > a {
+	background-color: #FFCC00 !important;
+	color: #990000;
+}
+
+.search-toggle, .search-toggle.active, .search-toggle:hover {
+	background-color: #990000;
+}
+.search-box {
+	background-color: #990000;
+}
+
+a, a:hover {
+	color: #990000;
+}
+
+.site-description {
+	font-size: 16px;
+	padding-top: 10px;
+}
+
+.header-main {
+	background-color: #CCCCCC;
+}
+
+body, .site, .site-footer, .site-header, .site-content .entry-content, .site-content .entry-summary, .page-content, .site-content .entry-header {
+	background-color: #EFEFEF;
+}
