@@ -32,16 +32,16 @@ Description: Remove menu items from dashboard.
 	add_action( 'wp_before_admin_bar_render', 'remove_admin_bar_links');
 	function remove_admin_bar_links() {
 		global $wp_admin_bar;
+		
 		$wp_admin_bar->remove_menu('wp-logo');
  		$wp_admin_bar->remove_menu('new-content');  
    		$wp_admin_bar->remove_menu('updates'); 
 		$wp_admin_bar->remove_node( 'widgets' );
-
 		$wp_admin_bar->remove_node( 'themes' );
 		$wp_admin_bar->remove_node( 'customize' );
 		$wp_admin_bar->remove_node( 'header' );
 		$wp_admin_bar->remove_node( 'menus' );
-
+		$wp_admin_bar->remove_node( 'edit' );
 		$wp_admin_bar->remove_node( 'dashboard' );
 		$wp_admin_bar->remove_node( 'search' );
 
@@ -66,4 +66,10 @@ Description: Remove menu items from dashboard.
 	//disable update reminders
 	add_filter( 'pre_site_transient_update_core', create_function( '$a', "return null;" ) );
 	add_filter('site_transient_update_plugins', create_function( '$a', "return null;" ));
+	
+	//remove edit links
+	add_filter('edit_post_link', 'wpse_remove_edit_post_link');
+	function wpse_remove_edit_post_link( $link ) {
+		return '';
+	}
 ?>
