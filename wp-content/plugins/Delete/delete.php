@@ -49,9 +49,10 @@ Description: Remove menu items from dashboard.
 		$main_menu_data = $wp_admin_bar->get_node( 'site-name' );
 		if ($main_menu_data->href !== (site_url() . '/')) {
 			$main_menu_data->href = admin_url("admin.php?page=list-papers");
+			$wp_admin_bar->remove_node( 'site-name' );
+			$wp_admin_bar->add_menu($main_menu_data);
 		}
-		$wp_admin_bar->remove_node( 'site-name' );
-		$wp_admin_bar->add_menu($main_menu_data);
+		
 	}
 
 	add_filter("login_redirect", "redirect_to_papers_on_login", 10, 3);
@@ -62,4 +63,7 @@ Description: Remove menu items from dashboard.
     	}
 	}
 
+	//disable update reminders
+	add_filter( 'pre_site_transient_update_core', create_function( '$a', "return null;" ) );
+	add_filter('site_transient_update_plugins', create_function( '$a', "return null;" ));
 ?>
