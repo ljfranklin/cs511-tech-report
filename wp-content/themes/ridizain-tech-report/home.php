@@ -1,4 +1,10 @@
 <?php
+
+
+$wp_roles = new WP_Roles();
+$wp_roles->remove_role("editor");
+$wp_roles->remove_role("author");
+$wp_roles->remove_role("subscriber");
 /**
  * The main template file
  *
