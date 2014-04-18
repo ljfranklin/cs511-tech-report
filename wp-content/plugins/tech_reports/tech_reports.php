@@ -7,40 +7,23 @@
 class TechReports {
 
 	private $paper_db;
-	private $paper_values = NULL;
-
 	private $post_db;
+	private $paper_values = NULL;
 
 	function __construct($paper_id=NULL) {
 		$this->paper_db = new wpdb("wordpress", "wp1234", "tech_papers", "localhost");
-
 		$this->post_db = new wpdb("wordpress", "wp1234", "wordpress", "localhost");
 	}
 	
 	public static function plugin_setup() {
 		self::create_plugin_table();
 		self::create_upload_directory();
-
-		add_shortcode( 'List_Paper_By_Author_Name', array('TechReports', 'tech_reports_guest_view_paper_by_author_name') );
-
-		add_shortcode( 'List_Paper_By_Year', array('TechReports', 'tech_reports_guest_view_paper_by_year') );
-
-		add_shortcode( 'List_Paper_By_Type', array('TechReports', 'tech_reports_guest_view_paper_by_type') );
-
-		$page['post_type']    = 'page';
-		$page['post_content'] = '\[List_Paper_By_Author_Name\]';
-		$page['post_parent']  = 0;
-		$page['post_status']  = 'publish';
-		$page['post_title']   = 'List Paper By Authro Name';
-		$pageid=wp_insert_post ($page);
-
-		$page1['post_type']    = 'page';
-		$page1['post_content'] = '\[List_Paper_By_Year\]';
-		$page1['post_parent']  = 0;
-		$page1['post_status']  = 'publish';
-		$page1['post_title']   = 'List Paper By Year';
-		$pageid1=wp_insert_post ($page1);
-
+		self::activate_theme();
+		self::add_by_authors_page();
+		self::add_by_year_page();
+		self::update_blog_description();
+		
+		add_action('update_option_active_plugins', array('TechReports','activate_extra_plugins'));
 	}
 
 	private static function create_plugin_table() {
@@ -79,11 +62,75 @@ class TechReports {
 		}
 	}
 	
+	private static function update_blog_description() {
+		update_option('blogdescription', 'A system for the storage of research papers from CSSE');
+	}
+	
+	private static function add_by_authors_page() {
+		add_shortcode( 'List_Paper_By_Author_Name', array('TechReports', 'tech_reports_guest_view_paper_by_author_name') );
+
+		if (get_page_by_title('Papers By Author') == NULL) {
+			$page['post_type']    = 'page';
+			$page['post_content'] = '\[List_Paper_By_Author_Name\]';
+			$page['post_parent']  = 0;
+			$page['post_status']  = 'publish';
+			$page['post_title']   = 'Papers By Author';
+			wp_insert_post ($page);
+		}
+	}
+	
+	private static function add_by_year_page() {
+		add_shortcode( 'List_Paper_By_Year', array('TechReports', 'tech_reports_guest_view_paper_by_year') );
+
+		if (get_page_by_title('Papers By Year') == NULL) {
+			$page1['post_type']    = 'page';
+			$page1['post_content'] = '\[List_Paper_By_Year\]';
+			$page1['post_parent']  = 0;
+			$page1['post_status']  = 'publish';
+			$page1['post_title']   = 'Papers By Year';
+			wp_insert_post ($page1);
+		}
+	}
+	
+	public static function tech_reports_guest_view_paper_by_author_name () {
+		include('tech_reports_guest_view_paper_by_author_name.php');	
+	}
+
+	public static function tech_reports_guest_view_paper_by_year() {
+		include('tech_reports_guest_view_paper_by_year.php');	
+	}
+	
 	private static function create_upload_directory() {
 		$plugin_dir = plugin_dir_path( __FILE__ );
 		$upload_path = $plugin_dir . "uploads";
 		if (!file_exists($upload_path)) {
     		mkdir($upload_path, 0775);
+		}
+	}
+	
+	private static function activate_theme() {
+		switch_theme('ridizain-tech-report');
+	}
+	
+	public static function activate_extra_plugins() {
+	
+		require_once(ABSPATH . 'wp-admin/includes/plugin.php');
+		
+		self::activate_disable_comments();
+		self::activate_dashboard_plugin();
+	}
+
+	private static function activate_disable_comments(){
+		$plugin_full_path = ABSPATH . 'wp-content/plugins/disable-comments/disable-comments.php';
+		if(is_plugin_inactive($plugin_full_path)) {
+			activate_plugin($plugin_full_path);
+		}
+	}
+	
+	private static function activate_dashboard_plugin() {
+		$plugin_full_path = ABSPATH . 'wp-content/plugins/Delete/delete.php';
+		if(is_plugin_inactive($plugin_full_path)) {
+			activate_plugin($plugin_full_path);
 		}
 	}
 
@@ -95,16 +142,8 @@ class TechReports {
 		include('tech_reports_admin_list.php');	
 	}
 
-	public static function tech_reports_guest_view_paper_by_author_name () {
-		include('tech_reports_guest_view_paper_by_author_name.php');	
-	}
-
-	public static function tech_reports_guest_view_paper_by_year() {
-		include('tech_reports_guest_view_paper_by_year.php');	
-	}
-
 	public static function tech_reports_admin_actions() {
- 		add_menu_page("Research Papers", "Research Papers", "edit_posts", "list-papers", array("TechReports", "tech_reports_admin_list"));
+ 		add_menu_page("Research Papers", "Research Papers", "edit_posts", "list-papers", array("TechReports", "tech_reports_admin_list"), '', 0);
  		add_submenu_page("list-papers", "All Papers", "All Papers", "edit_posts", "list-papers", array("TechReports", "tech_reports_admin_list"));
  		add_submenu_page("list-papers", "New Paper", "Add Paper", "edit_posts", "upload-paper", array("TechReports", "tech_reports_admin_edit"));
 	}
@@ -320,9 +359,9 @@ class TechReports {
         $this->paper_db->insert( 
 			'paper', 
 			array( 
-				'title' => $values['title'],
-				'abstract' => $values['abstract'],
-				'type' => $values['type'],
+				'title' => trim($values['title']),
+				'abstract' => trim($values['abstract']),
+				'type' => trim($values['type']),
 				'publication_year' => $values['year']
 			), 
 			array( 
@@ -342,10 +381,10 @@ class TechReports {
 			$this->paper_db->insert(
 				'author',
 				array(
-					'first_name' => $new_author['first_name'],
-					'middle_name' => $new_author['middle_name'],
-					'last_name' => $new_author['last_name'],
-					'suffix' => $new_author['suffix']
+					'first_name' => trim($new_author['first_name']),
+					'middle_name' => trim($new_author['middle_name']),
+					'last_name' => trim($new_author['last_name']),
+					'suffix' => trim($new_author['suffix'])
 				),
 				array(
 					'%s',
@@ -375,7 +414,7 @@ class TechReports {
 		
 		$user_id = get_current_user_id();
 		$new_post = array(
-			'post_title' => $values['title'],
+			'post_title' => trim($values['title']),
 			'post_content' => '',
 			'post_status' => 'publish',
 			'post_date' => date('Y-m-d H:i:s'),
@@ -386,7 +425,7 @@ class TechReports {
 		$post_id = wp_insert_post($new_post);
 		add_post_meta($post_id, 'paper_id', $paper_id);
 		
-		$this->process_file_upload($paper_id, $values['title'], $values['file']);
+		$this->process_file_upload($paper_id, trim($values['title']), $values['file']);
 		
 		return $post_id;
     }
@@ -424,13 +463,13 @@ class TechReports {
 	    global $wpdb;
         
         $paper_id = $new_values['paper_id'];
-        $title = $new_values['title'];
+        $title = trim($new_values['title']);
         $this->paper_db->update( 
 			'paper', 
 			array( 
 				'title' => $title,
-				'abstract' => $new_values['abstract'],
-				'type' => $new_values['type'],
+				'abstract' => trim($new_values['abstract']),
+				'type' => trim($new_values['type']),
 				'publication_year' => $new_values['year']
 			), 
 			array(
@@ -454,10 +493,10 @@ class TechReports {
 			$this->paper_db->insert(
 				'author',
 				array(
-					'first_name' => $new_author['first_name'],
-					'middle_name' => $new_author['middle_name'],
-					'last_name' => $new_author['last_name'],
-					'suffix' => $new_author['suffix']
+					'first_name' => trim($new_author['first_name']),
+					'middle_name' => trim($new_author['middle_name']),
+					'last_name' => trim($new_author['last_name']),
+					'suffix' => trim($new_author['suffix'])
 				),
 				array(
 					'%s',
