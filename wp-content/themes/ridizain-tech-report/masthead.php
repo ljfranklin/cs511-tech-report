@@ -1,6 +1,8 @@
     
 	<header id="masthead" class="site-header" role="banner">
-		
+		<div class="csse-banner">
+			<img src="">
+		</div>
 		<div class="header-main">
 		<?php if (get_theme_mod( 'ridizain_logo_image' )) : ?>
 		    <h1 class="site-title">

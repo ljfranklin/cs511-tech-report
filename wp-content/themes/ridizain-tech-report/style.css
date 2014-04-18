@@ -22,6 +22,14 @@
 	margin-top: 20px;
 }
 
+.csse-banner {
+	width: 100%;
+	background-color: red;
+}
+.csse-banner img {
+	width: 100%;
+}
+
 .list-view .site-content .hentry {
 	border-style: none;
 	margin: 0;
@@ -158,6 +166,10 @@ body, .site, .site-footer, .site-header, .site-content .entry-content, .site-con
 }
 .paper_display .paper_body > div {
 	margin-top: 10px;
+}
+
+.site:before {
+	display: none;
 }
 
 .hide {
