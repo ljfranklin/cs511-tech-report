@@ -331,23 +331,33 @@ class TechReports {
 	//song Teng 
 	public function get_all_years() {
 		$query = "SELECT DISTINCT publication_year FROM paper";
-		return $this->paper_db->get_results($query);
+		return $this->paper_db->get_results($query, ARRAY_A);
 	}
 	// Song Teng 
 	public function get_all_papers_by_year($year) {
 		$query = "SELECT * FROM paper WHERE publication_year = $year ORDER by title";
-		return $this->paper_db->get_results($query);
+		return $this->paper_db->get_results($query, ARRAY_A);
 	}
 
-	// Xiaoran
-	public function get_all_papers_by_type($type) {
-	
-		$query = "SELECT * FROM paper WHERE paper.type = '" . $type . "' ORDER BY title Asc";
-		return $this->paper_db->get_results($query);
-	
-	}
+	public function generate_citation($paper) {
+                       $citation = "";
+                       $authors = $paper['authors'];
+                       $num_authors = count($authors);
 
-	//xiaoran
+                       $citation .= $authors[0]['first_name'] . " " . $authors[0]['last_name'];
+                       
+                       if ($num_authors > 1) {
+                           for ($i=1;$i<$num_authors-1;$i++) {
+                               $author = $authors[$i];
+                               $citation .= ", " . $author['first_name'] . " " . $author['last_name'];
+                           }
+                           $citation .= " and " . $authors[$num_authors-1]['first_name'] . " " . $authors[$num_authors-1]['last_name'];                       
+                       }
+                       $citation .= ", \" " . $paper['title'] . "\", ";
+                       $citation .=  $paper['publication_year'] . ".";
+                       return $citation;
+        }
+
 	public function get_paper_detail_url_by_paperID($id) {
 		
 		$query = "SELECT guid FROM wp_posts WHERE ID IN (SELECT post_id FROM wp_postmeta WHERE meta_key = 'paper_id' AND meta_value = '" . $id . "')";
