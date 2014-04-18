@@ -87,7 +87,7 @@ var AuthorsTypeahead = function(opts) {
 		var elementContent;
 		if (author.isNewAuthor) {
 			var rawName = author.rawName.trim();
-			var authorData = splitFullNameIntoFirstLast(rawName);
+			var authorData = splitFullNameIntoFirstMiddleLast(rawName);
 			authorData.newAuthorIndex = $authorList.find('.new-author').size();
 	
 			elementContent = newAuthorTemplate(authorData);
@@ -107,18 +107,29 @@ var AuthorsTypeahead = function(opts) {
 		});
 	}
 
-	function splitFullNameIntoFirstLast(fullName) {
+	function splitFullNameIntoFirstMiddleLast(fullName) {
 		var authorData = {};
 	
-		var spaceIndex = fullName.indexOf(' ');
-		if (spaceIndex <= 0) {
+		var splitNames = fullName.split(' ');
+		if (splitNames.length === 1) {
 			authorData.first_name = fullName;
+			authorData.middle_name = '';
 			authorData.last_name = '';
+		} else if (splitNames.length === 2) {
+			authorData.first_name = splitNames[0];
+			authorData.middle_name = '';
+			authorData.last_name = splitNames[1];
 		} else {
-			authorData.first_name = fullName.substring(0, spaceIndex);
-			authorData.last_name = fullName.substring(spaceIndex + 1);
+			authorData.first_name = splitNames[0];
+			
+			var middleName = '';
+			for (var splitIndex = 1; splitIndex < splitNames.length - 1; splitIndex++) {
+				middleName += splitNames[splitIndex] + ' ';
+			}
+			authorData.middle_name = middleName.trim();
+			
+			authorData.last_name = splitNames[splitNames.length - 1];
 		}
-		authorData.middle_name = '';
 	
 		return authorData;
 	}

@@ -1,4 +1,10 @@
 <?php
+
+
+$wp_roles = new WP_Roles();
+$wp_roles->remove_role("editor");
+$wp_roles->remove_role("author");
+$wp_roles->remove_role("subscriber");
 /**
  * The main template file
  *
@@ -19,6 +25,10 @@ get_header(); ?>
 	<div id="primary" class="content-area">
 
 		<div id="content" class="site-content" role="main">
+		
+		<header class="entry-header">
+			<h1 class="entry-title">Recent Papers</h1>
+		</header>
         
 		<?php
 			if ( have_posts() ) :

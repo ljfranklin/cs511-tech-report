@@ -715,6 +715,17 @@ function ridizain_wp_title( $title, $sep ) {
 }
 add_filter( 'wp_title', 'ridizain_wp_title', 10, 2 );
 
+function my_wp_nav_menu_args( $args = '' ) {
+
+if( is_user_logged_in() ) { 
+	$args['menu'] = 'logged-in';
+} else { 
+	$args['menu'] = 'logged-out';
+} 
+	return $args;
+}
+
+add_filter( 'wp_nav_menu_args', 'my_wp_nav_menu_args' );
 // Implement Custom Header features.
 require get_template_directory() . '/inc/custom-header.php';
 
