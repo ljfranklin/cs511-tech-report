@@ -69,12 +69,12 @@ class TechReports {
 	private static function add_by_authors_page() {
 		add_shortcode( 'List_Paper_By_Author_Name', array('TechReports', 'tech_reports_guest_view_paper_by_author_name') );
 
-		if (get_page_by_title('List Papers By Author Name') == NULL) {
+		if (get_page_by_title('Papers By Author') == NULL) {
 			$page['post_type']    = 'page';
 			$page['post_content'] = '\[List_Paper_By_Author_Name\]';
 			$page['post_parent']  = 0;
 			$page['post_status']  = 'publish';
-			$page['post_title']   = 'List Papers By Author Name';
+			$page['post_title']   = 'Papers By Author';
 			wp_insert_post ($page);
 		}
 	}
@@ -82,12 +82,12 @@ class TechReports {
 	private static function add_by_year_page() {
 		add_shortcode( 'List_Paper_By_Year', array('TechReports', 'tech_reports_guest_view_paper_by_year') );
 
-		if (get_page_by_title('List Papers By Year') == NULL) {
+		if (get_page_by_title('Papers By Year') == NULL) {
 			$page1['post_type']    = 'page';
 			$page1['post_content'] = '\[List_Paper_By_Year\]';
 			$page1['post_parent']  = 0;
 			$page1['post_status']  = 'publish';
-			$page1['post_title']   = 'List Papers By Year';
+			$page1['post_title']   = 'Papers By Year';
 			wp_insert_post ($page1);
 		}
 	}

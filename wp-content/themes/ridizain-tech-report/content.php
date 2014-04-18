@@ -51,7 +51,7 @@
 		<?php endif; ?>
 		
 			<div class="paper_title">
-				<?php the_title( '<span class="entry-title">', '</h1>' ); ?>
+				<?php the_title( '<span class="entry-title">', '</span>' ); ?>
 				
 				<?php if (is_single() === false) : ?>
 				<span class="expand_icon genericon genericon-expand"></span>
