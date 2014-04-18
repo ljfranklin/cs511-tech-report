@@ -1,7 +1,7 @@
     
 	<header id="masthead" class="site-header" role="banner">
 		<div class="csse-banner">
-			<img src="">
+			<img src="<?php echo get_stylesheet_directory_uri() . '/images/cropped-usc-viterbi-logo5-fixed1-1024x98.png'; ?>">
 		</div>
 		<div class="header-main">
 		<?php if (get_theme_mod( 'ridizain_logo_image' )) : ?>
