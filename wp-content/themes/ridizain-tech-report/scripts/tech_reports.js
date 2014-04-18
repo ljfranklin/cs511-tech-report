@@ -8,7 +8,6 @@
 			ev.preventDefault();
 			ev.stopPropagation();
 		
-			console.log('clicked');
 			var $paperExpand = jQuery(this).parent('.paper_expand');
 			
 			var $paperBody = $paperExpand.find('.paper_body');
