@@ -9,28 +9,23 @@ class TechReports {
 	private $paper_db;
 	private $paper_values = NULL;
 
-	// Xiaoran
 	private $post_db;
 
 	function __construct($paper_id=NULL) {
 		$this->paper_db = new wpdb("wordpress", "wp1234", "tech_papers", "localhost");
 
-		// Xiaoran
 		$this->post_db = new wpdb("wordpress", "wp1234", "wordpress", "localhost");
 	}
 	
 	public static function plugin_setup() {
 		self::create_plugin_table();
 		self::create_upload_directory();
-		//zongmin
+
 		add_shortcode( 'List_Paper_By_Author_Name', array('TechReports', 'tech_reports_guest_view_paper_by_author_name') );
 
 		add_shortcode( 'List_Paper_By_Year', array('TechReports', 'tech_reports_guest_view_paper_by_year') );
 
-		// Xiaoran
 		add_shortcode( 'List_Paper_By_Type', array('TechReports', 'tech_reports_guest_view_paper_by_type') );
-		//$pages = get_pages();
-		//foreach ($pages as $page) wp_delete_post($page,true);
 
 		$page['post_type']    = 'page';
 		$page['post_content'] = '\[List_Paper_By_Author_Name\]';
@@ -100,14 +95,8 @@ class TechReports {
 		include('tech_reports_admin_list.php');	
 	}
 
-	//zongmin
 	public static function tech_reports_guest_view_paper_by_author_name () {
 		include('tech_reports_guest_view_paper_by_author_name.php');	
-	}
-
-	// Xiaoran
-	public static function tech_reports_guest_view_paper_by_type() {
-		include('tech_reports_guest_view_paper_by_type.php');	
 	}
 
 	public static function tech_reports_guest_view_paper_by_year() {
