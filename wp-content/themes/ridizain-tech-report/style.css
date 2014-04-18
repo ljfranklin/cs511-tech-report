@@ -12,10 +12,6 @@
 	border-style: none;
 }
 
-.read-more.button {
-	margin: 0;
-}
-
 #secondary {
 	display:none;
 }
@@ -23,10 +19,20 @@
 #content {
 	max-width: 960px;
 	margin: auto;
+	margin-top: 20px;
+}
+
+.list-view .site-content .hentry {
+	border-style: none;
+	margin: 0;
+	margin-top: 30px;
+	padding: 0;
 }
 
 .nav-menu .page_item {
 	margin-left: 10px;
+	height: 38px;
+	line-height: 38px;
 }
 
 .nav-menu .page_item a {
@@ -40,6 +46,15 @@
 
 .search-toggle, .search-toggle.active, .search-toggle:hover {
 	background-color: #990000;
+	width: 38px;
+	height: 38px;
+}
+.search-toggle:before {
+	color: #FFCC00;
+	margin-top: 9px;
+}
+.search-box-wrapper {
+	top: 38px;
 }
 .search-box {
 	background-color: #990000;
@@ -56,8 +71,92 @@ a, a:hover {
 
 .header-main {
 	background-color: #CCCCCC;
+	border-bottom: 1px solid #777777;
 }
 
 body, .site, .site-footer, .site-header, .site-content .entry-content, .site-content .entry-summary, .page-content, .site-content .entry-header {
 	background-color: #EFEFEF;
 }
+
+.entry-title a:hover {
+	color: #990000;
+}
+
+.paper_display {
+	border: 1px solid #777777;
+	margin-top: 20px;
+}
+.paper_display .paper_title {
+	background-color: #777777;
+	padding: 10px;
+	border-bottom: 1px solid #777777;
+	overflow: auto;
+}
+.paper_display .paper_title .genericon {
+	font-size: 40px;
+	height: 40px;
+	width: 40px;
+	float: right;
+}
+.paper_display:not(.expanded) .paper_title .collapse_icon {
+	display: none;
+}
+.paper_display.expanded .paper_title .expand_icon {
+	display: none;
+}
+
+.paper_display .paper_title .entry-title {
+	margin: 0;
+}
+.paper_display.paper_expand .paper_title {
+	cursor: pointer;
+}
+.paper_display .paper_body {
+	padding: 10px;
+	background-color: #CCCCCC;
+}
+
+.paper_display table {
+	margin: 0;
+}
+.paper_display table th {
+	border-style: none;
+}
+
+.paper_display .read-more.button {
+	float: none;
+	border-style: none;
+	padding: 0;
+	margin: 0;
+	margin-top: 10px;
+}
+.paper_display .read-more.button a {
+	box-sizing: border-box;
+	background-color: #990000;
+	color: #FFCC00 !important;
+	width: 100%;
+	height: 100%;
+	display: block;
+	padding: 5px 10px 5px 10px;
+}
+.paper_display .read-more.button a:hover {
+	background-color: #FFCC00;
+	color: #990000 !important;
+}
+.paper_display label {
+	font-weight: bold;
+}
+.paper_display .paper_body > div {
+	margin-top: 10px;
+}
+
+.hide {
+	display: none;
+}
+
+@media screen and (min-width: 1080px) {
+	.search-box .search-field {
+		width: 480px;
+	}
+}
+

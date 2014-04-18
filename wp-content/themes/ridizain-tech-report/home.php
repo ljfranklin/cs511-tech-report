@@ -25,6 +25,10 @@ get_header(); ?>
 	<div id="primary" class="content-area">
 
 		<div id="content" class="site-content" role="main">
+		
+		<header class="entry-header">
+			<h1 class="entry-title">Recent Papers</h1>
+		</header>
         
 		<?php
 			if ( have_posts() ) :
