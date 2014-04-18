@@ -34,7 +34,7 @@ class TechReports {
 		//$page['post_content'] = 'fetch';
 		$page['post_parent']  = 0;
 		$page['post_status']  = 'publish';
-		$page['post_title']   = 'List Paper By Authro Name';
+		$page['post_title']   = 'List Paper By Author Name';
 		$pageid=wp_insert_post ($page);
 
 		$page1['post_type']    = 'page';
@@ -61,6 +61,8 @@ class TechReports {
 				abstract TEXT NOT NULL,
 				publication_year YEAR NOT NULL,
 				type VARCHAR(40) NOT NULL,
+				paper_meet_name VARCHAR(100) NOT NULL,
+				download_cnt INT,
 				PRIMARY KEY (paper_id)
 				);";
 			$paper_db->query($sql);
@@ -330,14 +332,17 @@ class TechReports {
 				'title' => $values['title'],
 				'abstract' => $values['abstract'],
 				'type' => $values['type'],
-				'publication_year' => $values['year']
+				'publication_year' => $values['year'],
+				'download_cnt' => 0,
+				'paper_meet_name' => $values['paper_meet_name']
 			), 
 			array( 
 				'%s',
 				'%s',
 				'%s',
-				'%s',
-				'%d'
+				'%d',
+				'%d',
+				'%s'
 			) 
 		);
 		$paper_id = $this->paper_db->insert_id;
@@ -438,7 +443,10 @@ class TechReports {
 				'title' => $title,
 				'abstract' => $new_values['abstract'],
 				'type' => $new_values['type'],
-				'publication_year' => $new_values['year']
+				'publication_year' => $new_values['year'],
+				'download_cnt' => 0,
+				'paper_meet_name' => $new_values['paper_meet_name']
+
 			), 
 			array(
 				'paper_id' => $paper_id
@@ -447,7 +455,10 @@ class TechReports {
 				'%s',
 				'%s',
 				'%s',
-				'%d'
+				'%d',
+				'%d',
+				'%s'
+				
 			),
 			array(
 				'%d'
@@ -546,6 +557,30 @@ class TechReports {
 		} 
 		
 		return $post_id;
+    }
+
+    public function update_download_count($dcount,$pap_id)
+    {
+    	$this->paper_db->update( 
+			'paper', 
+			array( 
+				
+				'download_cnt' => $dcount
+				
+
+			), 
+			array(
+				'paper_id' => $pap_id
+			),
+			array( 
+				'%d'
+				
+			),
+			array(
+				'%d'
+			)
+		);
+
     }
     
     public function get_all_authors() {

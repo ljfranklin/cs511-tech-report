@@ -12,7 +12,8 @@
     		'abstract' => $_POST['paper_abstract'],
     		'year' => $_POST['paper_year'],
     		'type' => $_POST['paper_type'],
-    		'file' => $_FILES['paper_upload']
+    		'file' => $_FILES['paper_upload'],
+    		'paper_meet_name' => $_POST['paper_meet_name']
     	);	
     	$post_id = $tech_report->add_new_paper($values);
 	
@@ -24,11 +25,12 @@
     		'paper_id' => $_POST['paper_id'],
     		'title' => $_POST['paper_title'],
     		'existing_authors' => $_POST['existing_authors'],
-    		'new_authors' => $_POST['new_authors'],
+    		@'new_authors' => $_POST['new_authors'],
     		'abstract' => $_POST['paper_abstract'],
     		'year' => $_POST['paper_year'],
     		'type' => $_POST['paper_type'],
-    		'file' => $_FILES['paper_upload']
+    		'file' => $_FILES['paper_upload'],
+    		'paper_meet_name' => $_POST['paper_meet_name']
     	);
     	$post_id = $tech_report->update_paper($values, $_POST['previous_title']);
 		
@@ -166,10 +168,10 @@ $(document).ready(function() {
 				</tr>
 				<tr>
 					<th>
-						<label for="paper_year">Publication Year (YYYY):</label>
+						<label for="paper_year">Publication Year:</label>
 					</th>
 					<td>
-						<input type="text" id="paper_year" name="paper_year" size="4" value="<?php echo $get_existing_value('publication_year') ?>" pattern="\d{4}" required/>
+						<input type="text" id="paper_year" name="paper_year" size="4" placeholder="YYYY" value="<?php echo $get_existing_value('publication_year') ?>" pattern="\d{4}" required/>
 					</td>
 				</tr>
 				<tr>
@@ -177,13 +179,18 @@ $(document).ready(function() {
 						<label for="paper_type">Type:</label>
 					</th>
 					<td>
-						<select id="paper_type" name="paper_type" required>
-							<option value="tech-report" <?php if ($get_existing_value('type') === "tech-report") echo "selected=\"selected\"" ?>>Technical Report</option>
-							<option value="journal" <?php if ($get_existing_value('type') === "journal") echo "selected=\"selected\"" ?>>Journal Publication</option>
-							<option value="conference" <?php if ($get_existing_value('type') === "conference") echo "selected=\"selected\"" ?>>Conference Publication</option>
-							<option value="phd" <?php if ($get_existing_value('type') === "phd") echo "selected=\"selected\"" ?>>PhD Dissertation</option>
+						<select id="paper_type" name="paper_type" required onClick="placeH()">
+							<option  value="sel_pap" <?php if ($get_existing_value('type') === "sel_pap") echo "selected=\"selected\"" ?>>Select Paper Type</option>
+							<option  value="tech-report" <?php if ($get_existing_value('type') === "tech-report") echo "selected=\"selected\"" ?>>Technical Report</option>
+							<option  value="journal" <?php if ($get_existing_value('type') === "journal") echo "selected=\"selected\"" ?>>Journal Publication</option>
+							<option  value="conference" <?php if ($get_existing_value('type') === "conference")echo "selected=\"selected\"" ?>>Conference Publication</option>
+							<option  value="phd" <?php if ($get_existing_value('type') === "phd") echo "selected=\"selected\"" ?>>PhD Dissertation</option>
 						</select>
 					</td>
+				</tr>
+				<tr>
+					<th><label for="paper_meet_name">Published At:</label></th>
+					<td><input  id="paper_meet_name" type="text" name="paper_meet_name" value="<?php echo $get_existing_value('paper_meet_name') ?>" size="35" required></td>
 				</tr>
 				<tr>
 					<th>
@@ -212,4 +219,27 @@ $(document).ready(function() {
 			<input type="submit" name="submit" id="submit" class="button button-primary" value="Submit Paper">
 		</p>
 	</form>
+
+<script type="text/javascript">
+
+function placeH()
+{
+	var pub_at = document.getElementById("paper_type");
+
+	if(pub_at.value!="sel_pap")
+	{
+		if(pub_at.value=="tech-report")
+				document.getElementById("paper_meet_name").placeholder="Enter "+pub_at.value.toUpperCase()+" Meet Name";
+		else if (pub_at.value=="phd")
+				document.getElementById("paper_meet_name").placeholder="Enter "+pub_at.value.toUpperCase()+" Meet Name";
+		else
+				document.getElementById("paper_meet_name").placeholder="Enter "+pub_at.value.toUpperCase()+" Name";		
+
+	}
+	else
+					document.getElementById("paper_meet_name").placeholder="";
+
+}
+</script>
+
 </div>

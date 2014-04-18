@@ -30,16 +30,18 @@ class Paper_List_Table extends WP_List_Table {
 			'cb' => '<input type="checkbox" />',
 			'title'=>'Title',
 			'type' => 'Type',
-			'publication_year' => 'Year'
+			'publication_year' => 'Year',
+			'download_cnt' => 'Paper Downloads',
+			'paper_meet_name' => 'Published At'
 		);
 	}
-	
+
 	function get_hidden_columns() {
 		return array(
 			'paper_id'
 		);
 	}
-	
+
 	function prepare_items() {
 		$columns = $this->get_columns();
 		$hidden = $this->get_hidden_columns();
@@ -49,18 +51,22 @@ class Paper_List_Table extends WP_List_Table {
 		$tech_report = new TechReports();
 		$this->items = $tech_report->get_all_papers();
 	}
-	
+
 	function column_default( $item, $column_name ) {
   		switch( $column_name ) { 
     		case 'paper_id':
-    		case 'type':
-    		case 'publication_year':
+    		case 'type':  {echo $item->type; break;}
+    		case 'publication_year':  {echo $item->publication_year;break;}
+    		case 'download_cnt': {echo $item->download_cnt;break;}
+    		case 'paper_meet_name': {echo $item->paper_meet_name;break;}
+    			# code...
+    			break;
     			return $item->$column_name;
     		default:
     	 		return print_r( $item, true ); 
   		}
 	}
-	
+
 	function column_title($item) {
   		$actions = array(
             'edit'      => sprintf('<a href="?page=%s&action=%s&paper_id=%s">Edit</a>','upload-paper','edit',$item->paper_id),
@@ -69,13 +75,13 @@ class Paper_List_Table extends WP_List_Table {
 
 		return sprintf('%1$s %2$s', $item->title, $this->row_actions($actions, true));
 	}
-	
+
 	function column_cb($item) {
         return sprintf(
             '<input type="checkbox" name="paper_id[]" value="%s" />', $item->paper_id
         );    
     }
-	
+
 	function get_bulk_actions() {
   		$actions = array(
     		'delete'    => 'Delete'
