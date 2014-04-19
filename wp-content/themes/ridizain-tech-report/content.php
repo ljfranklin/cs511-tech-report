@@ -88,6 +88,17 @@
 							<th>Type:</th>
 							<td><?php echo $paper['type']; ?></td>
 						</tr>
+						<?php if ($paper['type'] === 'journal') : ?>
+						<tr>
+							<th>Journal:</th>
+							<td><?php echo $paper['published_at']; ?></td>
+						</tr>
+						<?php elseif ($paper['type'] === 'conference') : ?>
+						<tr>
+							<th>Conference:</th>
+							<td><?php echo $paper['published_at']; ?></td>
+						</tr>
+						<?php endif; ?>
 						<tr>
 							<th>Download:</th>
 							<td><a href="<?php echo $paper['file']; ?>" target="_blank">PDF</a></td>
