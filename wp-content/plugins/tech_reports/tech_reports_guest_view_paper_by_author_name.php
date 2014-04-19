@@ -2,6 +2,16 @@
 
 $tech_report = new TechReports();
 
+$get_keyword_links = function($paper) {
+	$keywords = explode(',', $paper['keywords']);
+	
+	$to_link = function($keyword) {
+		return '<a href="' . site_url() . '/?s=' . $keyword . '">' . $keyword . '</a>';
+	};
+	
+	return implode(', ', array_map($to_link, $keywords));
+};
+
 //$record_papers=array();
 $record_authors=array();
 $query = "SELECT * FROM author order by last_name";
@@ -19,6 +29,7 @@ foreach($authors as $author):
 		//endif;
 		if(!array_key_exists ($paper['paper_id'],$record_authors[$author['author_id']])):
 			$paper['identifier'] = $tech_report->get_paper_identifier($paper['paper_id'], $paper['publication_year']);
+			$paper['keywords'] = $get_keyword_links($paper);
 			$record_authors[$author['author_id']][$paper['paper_id']]=$paper;
 		endif;
 	endforeach;
@@ -61,7 +72,7 @@ foreach ($authors as $author):
 			endforeach;
 			echo implode(", ", $full_names); 
 
-			echo "</td></tr><tr><th>Publication Year:</th><td>".$paper['publication_year']."</td></tr><tr><th>Type:</th><td>".$paper['type']."</td></tr><tr><th>Download:</th><td><a href=\"".$paper['file']."\" target=\"_blank\">PDF</a></td></tr></tbody></table><div class=\"paper_citation\"><label>Citation:</label><p>";
+			echo "</td></tr><tr><th>Publication Year:</th><td>".$paper['publication_year']."</td></tr><tr><th>Type:</th><td>".$paper['type']."</td></tr><tr><th>Download:</th><td><a href=\"".$paper['file']."\" target=\"_blank\">PDF</a></td></tr><tr><th>Keywords:</th><td>".$paper['keywords']."</td></tr></tbody></table><div class=\"paper_citation\"><label>Citation:</label><p>";
 			echo $tech_report->generate_citation($paper);
 			echo "</p></div><div class=\"paper_abstract\"><label>Abstract:</label><p>";
 			echo $paper['abstract'];

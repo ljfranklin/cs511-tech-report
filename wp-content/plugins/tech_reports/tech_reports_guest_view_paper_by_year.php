@@ -5,7 +5,18 @@ $query = "SELECT * FROM paper order by publication_year asc";
 $papers=$tech_report ->paper_db->get_results($query, ARRAY_A);
 $year="";
 
+$get_keyword_links = function($paper) {
+	$keywords = explode(',', $paper['keywords']);
+	
+	$to_link = function($keyword) {
+		return '<a href="' . site_url() . '/?s=' . $keyword . '">' . $keyword . '</a>';
+	};
+	
+	return implode(', ', array_map($to_link, $keywords));
+};
+
 foreach ($papers as $paper):
+	$paper['keywords'] = $get_keyword_links($paper);
 	if($paper['publication_year']!=$year):
 		$year=$paper['publication_year'];
 		echo "<h1 class=\"entry-title\">".$year."</h1>";
@@ -28,7 +39,7 @@ foreach ($papers as $paper):
 			array_push($full_names, $author['full_name']);
 		endforeach;
 		echo implode(", ", $full_names); 
-		echo "</td></tr><tr><th>Publication Year:</th><td>".$paper['publication_year']."</td></tr><tr><th>Type:</th><td>".$paper['type']."</td></tr><tr><th>Download:</th><td><a href=\"".$paper['file']."\" target=\"_blank\">PDF</a></td></tr></tbody></table><div class=\"paper_citation\"><label>Citation:</label><p>";
+		echo "</td></tr><tr><th>Publication Year:</th><td>".$paper['publication_year']."</td></tr><tr><th>Type:</th><td>".$paper['type']."</td></tr><tr><th>Download:</th><td><a href=\"".$paper['file']."\" target=\"_blank\">PDF</a></td></tr><tr><th>Keywords:</th><td>".$paper['keywords']."</td></tr></tbody></table><div class=\"paper_citation\"><label>Citation:</label><p>";
 		echo $tech_report->generate_citation($paper);
 		echo "</p></div><div class=\"paper_abstract\"><label>Abstract:</label><p>";
 		echo $paper['abstract'];
