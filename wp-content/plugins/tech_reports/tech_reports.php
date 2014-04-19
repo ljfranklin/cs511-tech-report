@@ -169,6 +169,8 @@ class TechReports {
 			$paper['authors'][$key]['full_name'] = $this->get_author_fullname($author);
 		}
 		
+		$paper['identifier'] = $this->get_paper_identifier($paper['paper_id'], $paper['publication_year']);
+		
 		return $paper;
 	}
 	
@@ -207,20 +209,27 @@ class TechReports {
     
     private function get_paper_filename($paper_id, $publication_year=NULL) {
 	
-		if (is_null($publication_year)) {
-			$publication_year = $this->paper_db->get_var("SELECT publication_year FROM paper WHERE paper_id=$paper_id");
-		}
-	
     	$plugin_dir = plugin_dir_path( __FILE__ );
     
-    	$filename = "USC-CSSE-";
-    	$filename .= strval($publication_year);
-    	$filename .= "-" . strval($paper_id);
+    	$filename = $this->get_paper_identifier($paper_id, $publication_year);
     	
     	return sprintf('%suploads/%s.pdf',
     		$plugin_dir,
     	    $filename
     	);
+    }
+    
+    private function get_paper_identifier($paper_id, $publication_year=NULL) {
+    	
+    	if (is_null($publication_year)) {
+			$publication_year = $this->paper_db->get_var("SELECT publication_year FROM paper WHERE paper_id=$paper_id");
+		}
+    	
+    	$filename = "USC-CSSE-";
+    	$filename .= strval($publication_year);
+    	$filename .= "-" . strval($paper_id);
+    	
+    	return $filename;
     }
     
     private function get_paper_url($paper) {

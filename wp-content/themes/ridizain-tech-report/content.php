@@ -66,7 +66,11 @@
 		<?php endif; ?>
 		
 			<div class="paper_title">
-				<?php the_title( '<span class="entry-title">', '</span>' ); ?>
+				<?php the_title( '<span class="paper_title_text">', '</span>' ); ?>
+				<span> - </span>
+				<span class="paper_identifier">
+				<?php echo $paper['identifier']; ?>
+				</span>
 				
 				<?php if (is_single() === false) : ?>
 				<span class="expand_icon genericon genericon-expand"></span>

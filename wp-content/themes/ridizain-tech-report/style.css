@@ -107,14 +107,18 @@ body, .site, .site-footer, .site-header, .site-content .entry-content, .site-con
 	border-bottom: 1px solid #777777;
 	overflow: auto;
 }
-.paper_display .paper_title > .entry-title {
-	font-size: 26px;
-	line-height: 38px;
+.paper_display .paper_title {
+	font-size: 20px;
+	line-height: 30px;
+	text-transform: uppercase;
+}
+.paper_display .paper_title .paper_title_text {
+	font-weight: bold;
 }
 .paper_display .paper_title .genericon {
-	font-size: 40px;
-	height: 40px;
-	width: 40px;
+	font-size: 30px;
+	height: 30px;
+	width: 30px;
 	float: right;
 }
 .paper_display:not(.expanded) .paper_title .collapse_icon {
