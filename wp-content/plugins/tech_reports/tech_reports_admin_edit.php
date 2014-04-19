@@ -48,6 +48,7 @@
     		'year' => $_POST['paper_year'],
     		'type' => $type,
     		'published_at' => $published_at,
+    		'keywords' => $_POST['paper_keywords'],
     		'file' => $_FILES['paper_upload']
     	);
 	}
@@ -236,6 +237,14 @@ function updateJournalConferenceDisplay() {
 					</th>
 					<td>
 						<textarea id="paper_abstract" name="paper_abstract" rows="10" cols="30" required><?php echo $get_existing_value('abstract') ?></textarea>
+					</td>
+				</tr>
+				<tr>
+					<th>
+						<label for="paper_keywords">Keywords (comma separated):</label>
+					</th>
+					<td>
+						<input id="paper_keywords" name="paper_keywords" size="30" value="<?php echo $get_existing_value('keywords') ?>" placeholder="Enter keywords [optional]">
 					</td>
 				</tr>
 				<tr>

@@ -35,6 +35,7 @@ class TechReports {
 				abstract TEXT NOT NULL,
 				publication_year YEAR NOT NULL,
 				published_at TEXT NULL,
+				keywords TEXT NULL,
 				type VARCHAR(40) NOT NULL,
 				PRIMARY KEY (paper_id)
 				);";
@@ -231,7 +232,7 @@ class TechReports {
 	public function get_search_results($query_term) {
 		
 		$search_query = "SELECT paper_id FROM paper 
-			WHERE title LIKE '%$query_term%' OR abstract LIKE '%$query_term%' OR published_at LIKE '%$query_term%'
+			WHERE title LIKE '%$query_term%' OR abstract LIKE '%$query_term%' OR published_at LIKE '%$query_term%' OR keywords LIKE '%$query_term%'
 			UNION
 			SELECT paper_id FROM paperAuthorAssoc
 			INNER JOIN author ON 
@@ -324,31 +325,26 @@ class TechReports {
 		return $this->paper_db->get_var($query);
 	}
 	public function get_author_papers($au){
-		//$query= "select * from paper inner join paperAuthorAssoc on paperAuthorAssoc.author_id=".$au;
 		$query="select * from paper where paper_id in (select paper_id from paperAuthorAssoc where author_id=".$au.")";
 		return $this->paper_db->get_results($query,ARRAY_A);
 	}
 
-	//song Teng 
 	public function get_all_years() {
 		$query = "SELECT DISTINCT publication_year FROM paper";
 		return $this->paper_db->get_results($query);
 	}
-	// Song Teng 
+	
 	public function get_all_papers_by_year($year) {
 		$query = "SELECT * FROM paper WHERE publication_year = $year ORDER by title";
 		return $this->paper_db->get_results($query);
 	}
 
-	// Xiaoran
 	public function get_all_papers_by_type($type) {
 	
 		$query = "SELECT * FROM paper WHERE paper.type = '" . $type . "' ORDER BY title Asc";
 		return $this->paper_db->get_results($query);
-	
 	}
 
-	//xiaoran
 	public function get_paper_detail_url_by_paperID($id) {
 		
 		$query = "SELECT guid FROM wp_posts WHERE ID IN (SELECT post_id FROM wp_postmeta WHERE meta_key = 'paper_id' AND meta_value = '" . $id . "')";
@@ -364,13 +360,15 @@ class TechReports {
 				'abstract' => trim($values['abstract']),
 				'type' => trim($values['type']),
 				'publication_year' => $values['year'],
-				'published_at' => trim($values['published_at'])
+				'published_at' => trim($values['published_at']),
+				'keywords' => trim($values['keywords'])
 			), 
 			array( 
 				'%s',
 				'%s',
 				'%s',
 				'%d',
+				'%s',
 				'%s'
 			) 
 		);
@@ -473,7 +471,8 @@ class TechReports {
 				'abstract' => trim($new_values['abstract']),
 				'type' => trim($new_values['type']),
 				'publication_year' => $new_values['year'],
-				'published_at' => trim($new_values['published_at'])
+				'published_at' => trim($new_values['published_at']),
+				'keywords' => trim($values['keywords'])
 			), 
 			array(
 				'paper_id' => $paper_id
@@ -483,6 +482,7 @@ class TechReports {
 				'%s',
 				'%s',
 				'%d',
+				'%s',
 				'%s'
 			),
 			array(

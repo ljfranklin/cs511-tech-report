@@ -26,24 +26,35 @@
 			}
 			return $full_names;						
 		};
-                $generate_citation = function() use ($paper) {
-                       $citation = "";
-                       $authors = $paper['authors'];
-                       $num_authors = count($authors);
+		
+        $generate_citation = function() use ($paper) {
+	       $citation = "";
+	       $authors = $paper['authors'];
+	       $num_authors = count($authors);
 
-                       $citation .= $authors[0]['first_name'] . " " . $authors[0]['last_name'];
-                       
-                       if ($num_authors > 1) {
-                           for ($i=1;$i<$num_authors-1;$i++) {
-                               $author = $authors[$i];
-                               $citation .= ", " . $author['first_name'] . " " . $author['last_name'];
-                           }
-                           $citation .= " and " . $authors[$num_authors-1]['first_name'] . " " . $authors[$num_authors-1]['last_name'];                       
-                       }
-                       $citation .= ", \" " . $paper['title'] . "\", ";
-                       $citation .=  $paper['publication_year'] . ".";
-                       return $citation;
-                };
+	       $citation .= $authors[0]['first_name'] . " " . $authors[0]['last_name'];
+	       
+	       if ($num_authors > 1) {
+	           for ($i=1;$i<$num_authors-1;$i++) {
+	               $author = $authors[$i];
+	               $citation .= ", " . $author['first_name'] . " " . $author['last_name'];
+	           }
+	           $citation .= " and " . $authors[$num_authors-1]['first_name'] . " " . $authors[$num_authors-1]['last_name'];                       
+	       }
+	       $citation .= ", \" " . $paper['title'] . "\", ";
+	       $citation .=  $paper['publication_year'] . ".";
+	       return $citation;
+        };
+        
+        $get_keyword_links = function() use ($paper) {
+        	$keywords = explode(',', $paper['keywords']);
+        	
+        	$to_link = function($keyword) {
+        		return '<a href="' . site_url() . '/?s=' . $keyword . '">' . $keyword . '</a>';
+        	};
+        	
+        	return implode(', ', array_map($to_link, $keywords));
+        };
 	?>
 
 	<header class="entry-header">
@@ -91,7 +102,11 @@
 						<tr>
 							<th>Download:</th>
 							<td><a href="<?php echo $paper['file']; ?>" target="_blank">PDF</a></td>
-						</tr>	
+						</tr>
+						<tr>
+							<th>Keywords:</th>
+							<td><?php echo $get_keyword_links(); ?></td>
+						</tr>
 					</tbody>
 				</table>
 				<?php if (is_single()) : ?>
