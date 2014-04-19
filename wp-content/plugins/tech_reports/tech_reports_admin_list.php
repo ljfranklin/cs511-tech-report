@@ -88,8 +88,6 @@ $paper_table = new Paper_List_Table();
 $paper_table->prepare_items();
 ?>
 
-
-
 <div class="wrap">
 	<h2>Research Papers</h2>
 	<form action="" method="POST">

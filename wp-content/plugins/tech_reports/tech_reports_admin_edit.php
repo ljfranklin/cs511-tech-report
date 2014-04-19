@@ -12,7 +12,7 @@
     if(isset($_POST['action']) && $_POST['action'] == 'edit') {
     	$values = get_values();
     	$values['paper_id'] = $_POST['paper_id'];
-    	$post_id = $tech_report->update_paper($values, $_POST['previous_title']);
+    	$post_id = $tech_report->update_paper($values, $_POST['previous_year']);
 		
 		wp_redirect(get_site_url()."/?p=$post_id");
 		exit;
@@ -45,7 +45,7 @@
     		'existing_authors' => $existing_authors,
     		'new_authors' => $new_authors,
     		'abstract' => $_POST['paper_abstract'],
-    		'year' => $_POST['paper_year'],
+    		'publication_year' => $_POST['paper_year'],
     		'type' => $type,
     		'published_at' => $published_at,
     		'keywords' => $_POST['paper_keywords'],
@@ -170,7 +170,7 @@ function updateJournalConferenceDisplay() {
 		<input type="hidden" name="action" value="<?php echo $is_editing ? 'edit' : 'create' ?>"/>
 		<?php if ($is_editing) { ?>
 			<input type="hidden" name="paper_id" value="<?php echo $get_existing_value('paper_id') ?>"/>
-			<input type="hidden" name="previous_title" value="<?php echo $get_existing_value('title') ?>"/>
+			<input type="hidden" name="previous_year" value="<?php echo $get_existing_value('publication_year') ?>"/>
 		<?php } ?>
 		<table class="form-table">
 			<tbody>

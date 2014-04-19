@@ -204,27 +204,27 @@ class TechReports {
 		}
 		return $full_name;
 	}
+    
+    private function get_paper_filename($paper_id, $publication_year=NULL) {
 	
-	private function get_paper_filename($paper_id, $title=NULL) {
-	
-		if (is_null($title)) {
-			$title = $this->paper_db->get_var("SELECT title FROM paper WHERE paper_id=$paper_id");
+		if (is_null($publication_year)) {
+			$publication_year = $this->paper_db->get_var("SELECT publication_year FROM paper WHERE paper_id=$paper_id");
 		}
 	
     	$plugin_dir = plugin_dir_path( __FILE__ );
-    	$filename = preg_replace("/[^a-zA-Z0-9]+/", "", $title);
-    	$maxlength = 15;
-    	$filename = substr($filename, 0, $maxlength);
+    
+    	$filename = "USC-CSSE-";
+    	$filename .= strval($publication_year);
     	$filename .= "-" . strval($paper_id);
     	
     	return sprintf('%suploads/%s.pdf',
-        		$plugin_dir,
-        	    $filename
-        	);
+    		$plugin_dir,
+    	    $filename
+    	);
     }
     
     private function get_paper_url($paper) {
-	 	$pdf_path = $this->get_paper_filename($paper['paper_id'], $paper['title']);
+	 	$pdf_path = $this->get_paper_filename($paper['paper_id'], $paper['publication_year']);
 		$base_path = ABSPATH;
 		return "../" . substr($pdf_path, strlen($base_path));
 	}
@@ -359,7 +359,7 @@ class TechReports {
 				'title' => trim($values['title']),
 				'abstract' => trim($values['abstract']),
 				'type' => trim($values['type']),
-				'publication_year' => $values['year'],
+				'publication_year' => $values['publication_year'],
 				'published_at' => trim($values['published_at']),
 				'keywords' => trim($values['keywords'])
 			), 
@@ -425,12 +425,12 @@ class TechReports {
 		$post_id = wp_insert_post($new_post);
 		add_post_meta($post_id, 'paper_id', $paper_id);
 		
-		$this->process_file_upload($paper_id, trim($values['title']), $values['file']);
+		$this->process_file_upload($paper_id, trim($values['publication_year']), $values['file']);
 		
 		return $post_id;
     }
     
-    private function process_file_upload($paper_id, $title, $file) {
+    private function process_file_upload($paper_id, $year, $file) {
     
     	$finfo = new finfo(FILEINFO_MIME_TYPE);
     	if (false === array_search(
@@ -445,32 +445,33 @@ class TechReports {
     	
 		if (!move_uploaded_file(
         	$file['tmp_name'],
-        	$this->get_paper_filename($paper_id, $title)
+        	$this->get_paper_filename($paper_id, $year)
     	)) {
     	    throw new RuntimeException('Failed to move uploaded file.');
     	}
     }
     
-    private function delete_old_file($paper_id, $old_title) {
-    	unlink($this->get_paper_filename($paper_id, $old_title));
+    private function delete_old_file($paper_id, $old_year) {
+    	unlink($this->get_paper_filename($paper_id, $old_year));
     }
     
-    private function rename_old_file($paper_id, $old_title, $new_title) {
-    	rename($this->get_paper_filename($paper_id, $old_title), $this->get_paper_filename($paper_id, $new_title));
+    private function rename_old_file($paper_id, $old_year, $new_year) {
+    	rename($this->get_paper_filename($paper_id, $old_year), $this->get_paper_filename($paper_id, $new_year));
     }
     
-    public function update_paper($new_values, $old_title) {
+    public function update_paper($new_values, $old_year) {
 	    global $wpdb;
         
         $paper_id = $new_values['paper_id'];
         $title = trim($new_values['title']);
+        $year = trim($new_values['publication_year']);
         $this->paper_db->update( 
 			'paper', 
 			array( 
 				'title' => $title,
 				'abstract' => trim($new_values['abstract']),
 				'type' => trim($new_values['type']),
-				'publication_year' => $new_values['year'],
+				'publication_year' => $year,
 				'published_at' => trim($new_values['published_at']),
 				'keywords' => trim($new_values['keywords'])
 			), 
@@ -572,13 +573,13 @@ class TechReports {
 		wp_update_post($updatedPost);
 		
 		if (empty($new_values['file']['tmp_name']) === false) {
-			$this->process_file_upload($paper_id, $title, $new_values['file']);
+			$this->process_file_upload($paper_id, $year, $new_values['file']);
 		}
 		
-		if (empty($new_values['file']['tmp_name']) && $old_title !== $title) {
-    		$this->rename_old_file($paper_id, $old_title, $title);
-    	} else if ($old_title !== $title) {
-			$this->delete_old_file($paper_id, $old_title);
+		if (empty($new_values['file']['tmp_name']) && $old_year !== $year) {
+    		$this->rename_old_file($paper_id, $old_year, $year);
+    	} else if ($old_year !== $year) {
+			$this->delete_old_file($paper_id, $old_year);
 		} 
 		
 		return $post_id;
