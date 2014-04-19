@@ -93,6 +93,9 @@ body, .site, .site-footer, .site-header, .site-content .entry-content, .site-con
 	background-color: #EFEFEF;
 }
 
+::-moz-selection { background: #990000; }
+::selection      { background: #990000; } 
+
 .entry-title a:hover {
 	color: #990000;
 }
