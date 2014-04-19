@@ -96,6 +96,16 @@ body, .site, .site-footer, .site-header, .site-content .entry-content, .site-con
 ::-moz-selection { background: #990000; }
 ::selection      { background: #990000; } 
 
+.entry-content th {
+	font-weight: bold;
+	text-transform: none;
+}
+.entry-content th, .entry-content td {
+	padding: 0;
+	font-size: 16px;
+	line-height: 24px;
+}
+
 .entry-title a:hover {
 	color: #990000;
 }
