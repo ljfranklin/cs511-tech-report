@@ -27,23 +27,8 @@
 			return $full_names;						
 		};
 		
-        $generate_citation = function() use ($paper) {
-	       $citation = "";
-	       $authors = $paper['authors'];
-	       $num_authors = count($authors);
-
-	       $citation .= $authors[0]['first_name'] . " " . $authors[0]['last_name'];
-	       
-	       if ($num_authors > 1) {
-	           for ($i=1;$i<$num_authors-1;$i++) {
-	               $author = $authors[$i];
-	               $citation .= ", " . $author['first_name'] . " " . $author['last_name'];
-	           }
-	           $citation .= " and " . $authors[$num_authors-1]['first_name'] . " " . $authors[$num_authors-1]['last_name'];                       
-	       }
-	       $citation .= ", \" " . $paper['title'] . "\", ";
-	       $citation .=  $paper['publication_year'] . ".";
-	       return $citation;
+        $generate_citation = function() use ($tech_report, $paper) {
+	       return $tech_report->generate_citation($paper);
         };
         
         $get_keyword_links = function() use ($paper) {
