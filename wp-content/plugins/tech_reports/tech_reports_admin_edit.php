@@ -130,7 +130,27 @@ $(document).ready(function() {
 			return;
 		}
 	});
+	
+	$('#paper_type').change(updateJournalConferenceDisplay).change();
 });
+
+function updateJournalConferenceDisplay() {
+	var selectedType = $(this).val();
+	var $journalInput = $('.journal_name');
+	var $conferenceInput = $('.conference_name');
+	
+	$journalInput.hide();
+	$conferenceInput.hide();
+	$journalInput.find('input').prop('required', false);
+	$conferenceInput.find('input').prop('required', false);
+	if (selectedType === 'journal') {
+		$journalInput.show();
+		$journalInput.find('input').prop('required', true);
+	} else if (selectedType === 'conference') {
+		$conferenceInput.show();
+		$conferenceInput.find('input').prop('required', true);
+	}
+}
 
 
 </script>
@@ -178,6 +198,7 @@ $(document).ready(function() {
 					</th>
 					<td>
 						<select id="paper_type" name="paper_type" required>
+							<option value="">Select Paper Type</option>
 							<option value="tech-report" <?php if ($get_existing_value('type') === "tech-report") echo "selected=\"selected\"" ?>>Technical Report</option>
 							<option value="journal" <?php if ($get_existing_value('type') === "journal") echo "selected=\"selected\"" ?>>Journal Publication</option>
 							<option value="conference" <?php if ($get_existing_value('type') === "conference") echo "selected=\"selected\"" ?>>Conference Publication</option>
@@ -185,6 +206,22 @@ $(document).ready(function() {
 						</select>
 					</td>
 				</tr>
+				<tr class="journal_name" style="display: none">
+ 					<th>
+ 						<label for="paper_published_at">Journal Name:</label>
+ 					</th>
+ 					<td>
+ 						<input id="paper_published_at" type="text" name="paper_published_at" value="<?php echo $get_existing_value('paper_published_at') ?>" placeholder="Journal Name">
+ 					</td>
+ 				</tr>
+ 				<tr class="conference_name" style="display: none">
+ 					<th>
+ 						<label for="paper_published_at">Conference Name:</label>
+ 					</th>
+ 					<td>
+ 						<input id="paper_published_at" type="text" name="paper_published_at" value="<?php echo $get_existing_value('paper_published_at') ?>" placeholder="Conference Name">
+ 					</td>
+ 				</tr>
 				<tr>
 					<th>
 						<label for="paper_abstract">Abstract:</label>
