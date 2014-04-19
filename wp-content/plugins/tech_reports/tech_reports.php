@@ -34,6 +34,7 @@ class TechReports {
 				title TEXT NOT NULL,
 				abstract TEXT NOT NULL,
 				publication_year YEAR NOT NULL,
+				published_at TEXT NULL,
 				type VARCHAR(40) NOT NULL,
 				PRIMARY KEY (paper_id)
 				);";
@@ -230,7 +231,7 @@ class TechReports {
 	public function get_search_results($query_term) {
 		
 		$search_query = "SELECT paper_id FROM paper 
-			WHERE title LIKE '%$query_term%' OR abstract LIKE '%$query_term%'
+			WHERE title LIKE '%$query_term%' OR abstract LIKE '%$query_term%' OR published_at LIKE '%$query_term%'
 			UNION
 			SELECT paper_id FROM paperAuthorAssoc
 			INNER JOIN author ON 
@@ -355,21 +356,22 @@ class TechReports {
 		
 	}
 	public function add_new_paper($values) {
-       
+       	
         $this->paper_db->insert( 
 			'paper', 
 			array( 
 				'title' => trim($values['title']),
 				'abstract' => trim($values['abstract']),
 				'type' => trim($values['type']),
-				'publication_year' => $values['year']
+				'publication_year' => $values['year'],
+				'published_at' => trim($values['published_at'])
 			), 
 			array( 
 				'%s',
 				'%s',
 				'%s',
-				'%s',
-				'%d'
+				'%d',
+				'%s'
 			) 
 		);
 		$paper_id = $this->paper_db->insert_id;
@@ -470,7 +472,8 @@ class TechReports {
 				'title' => $title,
 				'abstract' => trim($new_values['abstract']),
 				'type' => trim($new_values['type']),
-				'publication_year' => $new_values['year']
+				'publication_year' => $new_values['year'],
+				'published_at' => trim($new_values['published_at'])
 			), 
 			array(
 				'paper_id' => $paper_id
@@ -479,7 +482,8 @@ class TechReports {
 				'%s',
 				'%s',
 				'%s',
-				'%d'
+				'%d',
+				'%s'
 			),
 			array(
 				'%d'
