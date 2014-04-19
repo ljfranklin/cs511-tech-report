@@ -472,7 +472,7 @@ class TechReports {
 				'type' => trim($new_values['type']),
 				'publication_year' => $new_values['year'],
 				'published_at' => trim($new_values['published_at']),
-				'keywords' => trim($values['keywords'])
+				'keywords' => trim($new_values['keywords'])
 			), 
 			array(
 				'paper_id' => $paper_id
