@@ -22,7 +22,7 @@ foreach ($papers as $paper):
 		$paper['authors'][$key]['full_name'] = $tech_report ->get_author_fullname($author);
 	endforeach;
 
-		echo "<header class=\"entry-header\"><div class=\"paper_display paper_expand\"><div class=\"paper_title\"><span class=\"entry-title\">".$paper['title']."</span><span class=\"expand_icon genericon genericon-expand\"></span><span class=\"collapse_icon genericon genericon-collapse\"></span></div><div class=\"paper_body hide\"><table class=\"paper_main_data\"><tbody><tr><th>Author:</th><td>";
+		echo "<header class=\"entry-header\"><div class=\"paper_display paper_expand\"><div class=\"paper_title\"><span class=\"paper_title_text\">".$paper['title']."</span><span class=\"expand_icon genericon genericon-expand\"></span><span class=\"collapse_icon genericon genericon-collapse\"></span></div><div class=\"paper_body hide\"><table class=\"paper_main_data\"><tbody><tr><th>Author:</th><td>";
 		$full_names=array();
 		foreach ($paper['authors'] as $author):
 			array_push($full_names, $author['full_name']);
