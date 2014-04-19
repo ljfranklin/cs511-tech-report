@@ -18,6 +18,7 @@ foreach($authors as $author):
 		//	$record_papers[$paper['paper_id']][$author['author_id']]=$author;
 		//endif;
 		if(!array_key_exists ($paper['paper_id'],$record_authors[$author['author_id']])):
+			$paper['identifier'] = $tech_report->get_paper_identifier($paper['paper_id'], $paper['publication_year']);
 			$record_authors[$author['author_id']][$paper['paper_id']]=$paper;
 		endif;
 	endforeach;
@@ -30,12 +31,14 @@ foreach ($authors as $author):
 		echo "<h1 class=\"entry-title\">".$initial."</h1>";
 	endif;
 
-		echo "<header class=\"entry-header\"><div class=\"paper_display paper_expand\"><div class=\"paper_title\"><span class=\"entry-title\">".$author['first_name']." ".$author['middle_name']." ".$author['last_name']."</span><span class=\"expand_icon genericon genericon-expand\"></span><span class=\"collapse_icon genericon genericon-collapse\"></span></div><div class=\"paper_body hide\">";
+		echo "<header class=\"entry-header\"><div class=\"paper_display paper_expand\"><div class=\"paper_title\"><span class=\"paper_title_text\">".$author['first_name']." ".$author['middle_name']." ".$author['last_name']."</span><span class=\"expand_icon genericon genericon-expand\"></span><span class=\"collapse_icon genericon genericon-collapse\"></span></div><div class=\"paper_body hide\">";
 		echo "<table class=\"paper_main_data\"><tbody>";
 		foreach($record_authors[$author['author_id']] as $paper):
-			echo "<tr><td><div class=\"paper_display paper_expand\"><div class=\"paper_title\"><span class=\"entry-title\">";
+			echo "<tr><td><div class=\"paper_display paper_expand\"><div class=\"paper_title\"><span class=\"paper_title_text\">";
 			echo $paper['title'];
-			echo "</span><span class=\"expand_icon genericon genericon-expand\"></span><span class=\"collapse_icon genericon genericon-collapse\"></span></div><div class=\"paper_body hide\">";
+			echo "</span><span> - </span>";
+			echo "<span>" . $paper['identifier'] . '</span>';
+			echo "<span class=\"expand_icon genericon genericon-expand\"></span><span class=\"collapse_icon genericon genericon-collapse\"></span></div><div class=\"paper_body hide\">";
 
 			echo "<table class=\"paper_main_data\"><tbody><tr><th>Author:</th><td>";
 			//foreach ($record_papers[$paper['paper_id']] as $author2):
