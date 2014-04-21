@@ -755,6 +755,18 @@ class TechReports {
     public function the_author_paper() {
     	$this->current_paper = array_shift($this->current_author['papers']);
     }
+    
+    public function get_author_initials() {
+    
+    	$initials = array();
+    	foreach ($this->queried_authors as $author) {
+    		$first_initial = substr($author['last_name'], 0, 1);
+    		if (in_array($first_initial, $initials) === false) {
+    			$initials[] = $first_initial;
+    		}
+    	}
+    	return $initials;
+    }
 }
 
 register_activation_hook( __FILE__, array('TechReports','plugin_setup'));

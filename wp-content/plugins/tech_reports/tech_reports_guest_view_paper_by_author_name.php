@@ -1,13 +1,28 @@
 <?php
 	
 	$tech_report = new TechReports();
-	
 	$tech_report->query_papers_by_author();
+	
+	$initials = $tech_report->get_author_initials();
 ?>
 	
 	<div id="primary" class="content-area">
 
 		<div id="content" class="site-content" role="main">
+        
+        <div class="author_pagination_links">
+    		<?php foreach (range('A', 'Z') as $letter) : ?>
+    			<?php if (in_array($letter, $initials)) : ?>
+				<a href="#initial-<?php echo $letter; ?>">
+					<?php echo $letter; ?>
+				</a>
+				<?php else : ?>
+				<span>
+					<?php echo $letter; ?>
+				</span>
+				<?php endif; ?>
+			<?php endforeach; ?>
+        </div>
         
 		<?php if ( $tech_report->have_authors() ) : ?>
 			
@@ -20,7 +35,9 @@
 					
 				<?php if ($last_initial !== $initial) : ?>
 					<h1 class="author_initial">
-						<?php echo $initial; ?>
+						<a name="initial-<?php echo $initial; ?>">
+							<?php echo $initial; ?>
+						</a>
 					</h1>
 					
 					<?php $last_initial = $initial; ?>
