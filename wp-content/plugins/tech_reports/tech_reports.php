@@ -625,8 +625,17 @@ class TechReports {
     	return $results;
     }
     
-    public function query_papers() {
-    	$query = "SELECT paper.*, author.* FROM paper INNER JOIN paperAuthorAssoc ON paper.paper_id=paperAuthorAssoc.paper_id INNER JOIN author ON author.author_id=paperAuthorAssoc.author_id";
+    public function query_papers($paper_id = NULL) {
+    
+    	if ($paper_id === NULL) {
+    		$query = $this->get_all_papers_query();
+    		$this->is_single = false;
+    	} else {
+    		$query = $this->get_single_paper_query($paper_id);
+    		$this->is_single = true;
+    	}
+    
+    	
     	$results = $this->paper_db->get_results($query, ARRAY_A);
     	
     	$results_array = array();
@@ -665,8 +674,20 @@ class TechReports {
     	 $this->queried_papers = array_values($results_array);
     }
     
+    private function get_all_papers_query() {
+    	return "SELECT paper.*, author.* FROM paper 
+    		INNER JOIN paperAuthorAssoc ON paper.paper_id=paperAuthorAssoc.paper_id 
+    		INNER JOIN author ON author.author_id=paperAuthorAssoc.author_id";
+    }
+    
+    private function get_single_paper_query($paper_id) {
+    	return "SELECT paper.*, author.* FROM paper
+    		INNER JOIN paperAuthorAssoc ON paper.paper_id=paperAuthorAssoc.paper_id 
+    		INNER JOIN author ON author.author_id=paperAuthorAssoc.author_id
+    		WHERE paper.paper_id=$paper_id";
+    }
+    
     public function have_papers() {
-    	$this->is_single = false;
     	return ($this->queried_papers !== NULL && count($this->queried_papers) > 0);
     }
     
@@ -687,7 +708,7 @@ class TechReports {
     }
     
     public function get_permalink() {
-    	return esc_url(get_site_url() . '/?p=' . $this->current_paper['paper_id']);
+    	return esc_url(get_site_url() . '/?paper=' . $this->current_paper['paper_id']);
     }
 }
 

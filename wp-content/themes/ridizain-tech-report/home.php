@@ -21,7 +21,7 @@ $wp_roles->remove_role("subscriber");
  */
 
 get_header(); ?>
-
+	
 	<div id="primary" class="content-area">
 
 		<div id="content" class="site-content" role="main">
@@ -32,7 +32,13 @@ get_header(); ?>
         
         <?php 
         	$tech_report = new TechReports(); 
-        	$tech_report->query_papers();
+        	
+        	$paper_id = isset($_GET['paper']) ? $_GET['paper'] : NULL;
+        	if ($paper_id === NULL) {
+				$tech_report->query_papers();
+			} else {
+				$tech_report->query_papers($paper_id);
+			}
         ?>
         
 		<?php
