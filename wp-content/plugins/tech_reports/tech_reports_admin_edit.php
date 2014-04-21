@@ -4,17 +4,17 @@
    	
     if(isset($_POST['action']) && $_POST['action'] == 'create') {
     	$values = get_values();
-    	$post_id = $tech_report->add_new_paper($values);
+    	$paper_id = $tech_report->add_new_paper($values);
 	
-		wp_redirect(get_site_url()."/?p=$post_id");
+		wp_redirect(get_site_url()."/?paper=$paper_id");
 		exit;
     } 
     if(isset($_POST['action']) && $_POST['action'] == 'edit') {
     	$values = get_values();
     	$values['paper_id'] = $_POST['paper_id'];
-    	$post_id = $tech_report->update_paper($values, $_POST['previous_year']);
+    	$paper_id = $tech_report->update_paper($values, $_POST['previous_year']);
 		
-		wp_redirect(get_site_url()."/?p=$post_id");
+		wp_redirect(get_site_url()."/?paper=$paper_id");
 		exit;
     }
     

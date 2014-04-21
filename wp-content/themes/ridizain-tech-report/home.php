@@ -18,8 +18,12 @@ get_header(); ?>
 		<div id="content" class="site-content" role="main">
 		
 		<?php if ($tech_report->is_single() === false) : ?> 
-		<header class="entry-header">
+		<header>
 			<h1 class="entry-title">Recent Papers</h1>
+		</header>
+		<?php else : ?>
+		<header>
+			<h1 class="entry-title">Detail</h1>
 		</header>
 		<?php endif; ?>
         

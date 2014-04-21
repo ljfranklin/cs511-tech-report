@@ -31,10 +31,9 @@
 	max-width: 750px;
 }
 
-.list-view .site-content .hentry {
+.hentry, .list-view .site-content .hentry {
 	border-style: none;
 	margin: 0;
-	margin-top: 30px;
 	padding: 0;
 }
 

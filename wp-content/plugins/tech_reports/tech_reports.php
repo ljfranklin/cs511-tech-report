@@ -10,7 +10,9 @@ class TechReports {
 	private $post_db;
 	private $paper_values = NULL;
 	private $queried_papers = NULL;
+	private $queried_authors = NULL;
 	private $current_paper = NULL;
+	private $current_author = NULL;
 	private $is_single = false;
 
 	function __construct($paper_id=NULL) {
@@ -458,7 +460,7 @@ class TechReports {
 		
 		$this->process_file_upload($paper_id, trim($values['publication_year']), $values['file']);
 		
-		return $post_id;
+		return $paper_id;
     }
     
     private function process_file_upload($paper_id, $year, $file) {
@@ -613,7 +615,7 @@ class TechReports {
 			$this->delete_old_file($paper_id, $old_year);
 		} 
 		
-		return $post_id;
+		return $paper_id;
     }
     
     public function get_all_authors() {
@@ -625,17 +627,40 @@ class TechReports {
     	return $results;
     }
     
+    public function query_papers_by_author() {
+    	$this->is_single = false;
+    	$query = $this->get_all_papers_query() . ' ORDER BY author.last_name ASC';
+    	
+    	$papers = $this->get_papers_from_query($query);
+    	
+    	$author_to_papers = array();
+    	foreach ($papers as $paper) {
+    		foreach ($paper['authors'] as $author) {
+    			$author_id = $author['author_id'];
+    			if(!array_key_exists($author_id, $author_to_papers)) {
+    				$author_to_papers[$author_id] = $author;
+    			}
+    			$author_to_papers[$author_id]['papers'][] = $paper;
+    		}
+    	}
+    	
+    	$this->queried_authors = array_values($author_to_papers);
+    }
+    
     public function query_papers($paper_id = NULL) {
     
     	if ($paper_id === NULL) {
-    		$query = $this->get_all_papers_query();
+    		$query = $this->get_all_papers_query() . ' ORDER BY paper_id DESC';
     		$this->is_single = false;
     	} else {
     		$query = $this->get_single_paper_query($paper_id);
     		$this->is_single = true;
     	}
     
-    	
+    	$this->queried_papers = $this->get_papers_from_query($query);
+    }
+    
+    private function get_papers_from_query($query) {
     	$results = $this->paper_db->get_results($query, ARRAY_A);
     	
     	$results_array = array();
@@ -670,8 +695,8 @@ class TechReports {
 			$results_array[$index]['identifier'] = $this->get_paper_identifier($paper['paper_id'], $paper['publication_year']);
 			$results_array[$index]['file'] = $this->get_paper_url($paper);
 		}
-    	
-    	 $this->queried_papers = array_values($results_array);
+		
+		return array_values($results_array);
     }
     
     private function get_all_papers_query() {
@@ -710,17 +735,34 @@ class TechReports {
     public function get_permalink() {
     	return esc_url(get_site_url() . '/?paper=' . $this->current_paper['paper_id']);
     }
+    
+    public function have_authors() {
+    	return ($this->queried_authors !== NULL && count($this->queried_authors) > 0);
+    }
+    
+    public function the_author() {
+    	$this->current_author = array_shift($this->queried_authors);
+    }
+    
+    public function get_author_field($field_name) {
+    	return $this->current_author[$field_name];
+    }
+    
+    public function have_author_papers() {
+    	return ($this->current_author['papers'] !== NULL && count($this->current_author['papers']) > 0);
+    }
+    
+    public function the_author_paper() {
+    	$this->current_paper = array_shift($this->current_author['papers']);
+    }
 }
 
 register_activation_hook( __FILE__, array('TechReports','plugin_setup'));
 
 add_action('admin_menu', array('TechReports','tech_reports_admin_actions'));
 
-		//zongmin
-		add_shortcode( 'List_Paper_By_Author_Name', array('TechReports', 'tech_reports_guest_view_paper_by_author_name') );
+add_shortcode( 'List_Paper_By_Author_Name', array('TechReports', 'tech_reports_guest_view_paper_by_author_name') );
 
-		add_shortcode( 'List_Paper_By_Year', array('TechReports', 'tech_reports_guest_view_paper_by_year') );
+add_shortcode( 'List_Paper_By_Year', array('TechReports', 'tech_reports_guest_view_paper_by_year') );
 
-		// Xiaoran
-		add_shortcode( 'List_Paper_By_Type', array('TechReports', 'tech_reports_guest_view_paper_by_type') );
 ?>
