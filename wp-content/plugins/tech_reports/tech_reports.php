@@ -647,6 +647,13 @@ class TechReports {
     	$this->queried_authors = array_values($author_to_papers);
     }
     
+    public function query_recent_papers() {
+    	$query = $this->get_all_papers_query() . ' ORDER BY paper_id DESC LIMIT 20';
+		$this->is_single = false;
+    
+    	$this->queried_papers = $this->get_papers_from_query($query);
+    }
+    
     public function query_papers($paper_id = NULL) {
     
     	if ($paper_id === NULL) {
