@@ -9,6 +9,9 @@ class TechReports {
 	private $paper_db;
 	private $post_db;
 	private $paper_values = NULL;
+	private $queried_papers = NULL;
+	private $current_paper = NULL;
+	private $is_single = false;
 
 	function __construct($paper_id=NULL) {
 		$this->paper_db = new wpdb("wordpress", "wp1234", "tech_papers", "localhost");
@@ -622,7 +625,7 @@ class TechReports {
     	return $results;
     }
     
-    public function get_joined_papers() {
+    public function query_papers() {
     	$query = "SELECT paper.*, author.* FROM paper INNER JOIN paperAuthorAssoc ON paper.paper_id=paperAuthorAssoc.paper_id INNER JOIN author ON author.author_id=paperAuthorAssoc.author_id";
     	$results = $this->paper_db->get_results($query, ARRAY_A);
     	
@@ -653,13 +656,38 @@ class TechReports {
 			$results_array[$row['paper_id']]['authors'][] = $author;
 		}
 		
-		foreach ($results_array as $paper) {
-			$paper['citation'] = $this->generate_citation($paper);
-			$paper['identifier'] = $this->get_paper_identifier($paper['paper_id'], $paper['publication_year']);
-			$paper['file'] = $this->get_paper_filename($paper['paper_id'], $paper['publication_year']);
+		foreach ($results_array as $index => $paper) {
+			$results_array[$index]['citation'] = $this->generate_citation($paper);
+			$results_array[$index]['identifier'] = $this->get_paper_identifier($paper['paper_id'], $paper['publication_year']);
+			$results_array[$index]['file'] = $this->get_paper_url($paper);
 		}
     	
-    	return array_values($results_array);
+    	 $this->queried_papers = array_values($results_array);
+    }
+    
+    public function have_papers() {
+    	$this->is_single = false;
+    	return ($this->queried_papers !== NULL && count($this->queried_papers) > 0);
+    }
+    
+    public function the_paper() {
+    	$this->current_paper = array_shift($this->queried_papers);
+    }
+    
+    public function get_paper_field($field_name) {
+    	return $this->current_paper[$field_name];
+    }
+    
+    public function is_single() {
+    	return $this->is_single;
+    }
+    
+    public function the_ID() {
+    	return $this->current_paper['paper_id'];
+    }
+    
+    public function get_permalink() {
+    	return esc_url(get_site_url() . '/?p=' . $this->current_paper['paper_id']);
     }
 }
 
