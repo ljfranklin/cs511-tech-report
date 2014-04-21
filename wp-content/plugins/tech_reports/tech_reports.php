@@ -621,6 +621,46 @@ class TechReports {
     	}	
     	return $results;
     }
+    
+    public function get_joined_papers() {
+    	$query = "SELECT paper.*, author.* FROM paper INNER JOIN paperAuthorAssoc ON paper.paper_id=paperAuthorAssoc.paper_id INNER JOIN author ON author.author_id=paperAuthorAssoc.author_id";
+    	$results = $this->paper_db->get_results($query, ARRAY_A);
+    	
+    	$results_array = array();
+		foreach($results as $row) {
+			if(!array_key_exists($row['paper_id'], $results_array)) {
+				$results_array[$row['paper_id']] = array(
+				   	'paper_id' => $row['paper_id'], 
+			 	  	'title' => $row['title'],
+			 	  	'abstract' => $row['abstract'], 
+			 	  	'publication_year' => $row['publication_year'], 
+			 	  	'published_at' => $row['published_at'], 
+			 	  	'keywords' => $row['keywords'], 
+			 	  	'type' => $row['type'],
+			 	  	'authors' => array()
+		 	  	);
+			}
+			
+			$author = array(
+				'author_id' => $row['author_id'], 
+				'first_name' => $row['first_name'], 
+				'middle_name' => $row['middle_name'],
+				'last_name' => $row['last_name'], 
+				'suffix' => $row['suffix']
+			);
+			$author['full_name'] = $this->get_author_fullname($author);
+			
+			$results_array[$row['paper_id']]['authors'][] = $author;
+		}
+		
+		foreach ($results_array as $paper) {
+			$paper['citation'] = $this->generate_citation($paper);
+			$paper['identifier'] = $this->get_paper_identifier($paper['paper_id'], $paper['publication_year']);
+			$paper['file'] = $this->get_paper_filename($paper['paper_id'], $paper['publication_year']);
+		}
+    	
+    	return array_values($results_array);
+    }
 }
 
 register_activation_hook( __FILE__, array('TechReports','plugin_setup'));

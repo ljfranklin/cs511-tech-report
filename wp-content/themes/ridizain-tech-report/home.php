@@ -30,6 +30,11 @@ get_header(); ?>
 			<h1 class="entry-title">Recent Papers</h1>
 		</header>
         
+        <?php 
+        	$tech_report = new TechReports(); 
+        	echo json_encode($tech_report->get_joined_papers());
+        ?>
+        
 		<?php
 			if ( have_posts() ) :
 				// Start the Loop.
