@@ -72,4 +72,9 @@ Description: Remove menu items from dashboard.
 	function wpse_remove_edit_post_link( $link ) {
 		return '';
 	}
+	
+	$wp_roles = new WP_Roles();
+	$wp_roles->remove_role("editor");
+	$wp_roles->remove_role("author");
+	$wp_roles->remove_role("subscriber");
 ?>
