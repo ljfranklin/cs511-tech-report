@@ -10,7 +10,7 @@
 		
 			var $paperExpand = jQuery(this).parent('.paper_expand');
 			
-			var $paperBody = $paperExpand.find('.paper_body');
+			var $paperBody = $paperExpand.find('.paper_body').first();
 			$paperBody.stop().slideToggle();
 			
 			$paperExpand.toggleClass('expanded');

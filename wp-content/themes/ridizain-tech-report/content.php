@@ -26,24 +26,20 @@
 			}
 			return $full_names;						
 		};
-                $generate_citation = function() use ($paper) {
-                       $citation = "";
-                       $authors = $paper['authors'];
-                       $num_authors = count($authors);
-
-                       $citation .= $authors[0]['first_name'] . " " . $authors[0]['last_name'];
-                       
-                       if ($num_authors > 1) {
-                           for ($i=1;$i<$num_authors-1;$i++) {
-                               $author = $authors[$i];
-                               $citation .= ", " . $author['first_name'] . " " . $author['last_name'];
-                           }
-                           $citation .= " and " . $authors[$num_authors-1]['first_name'] . " " . $authors[$num_authors-1]['last_name'];                       
-                       }
-                       $citation .= ", \" " . $paper['title'] . "\", ";
-                       $citation .=  $paper['publication_year'] . ".";
-                       return $citation;
-                };
+		
+        $generate_citation = function() use ($tech_report, $paper) {
+	       return $tech_report->generate_citation($paper);
+        };
+        
+        $get_keyword_links = function() use ($paper) {
+        	$keywords = explode(',', $paper['keywords']);
+        	
+        	$to_link = function($keyword) {
+        		return '<a href="' . site_url() . '/?s=' . $keyword . '">' . $keyword . '</a>';
+        	};
+        	
+        	return implode(', ', array_map($to_link, $keywords));
+        };
 	?>
 
 	<header class="entry-header">
@@ -55,7 +51,11 @@
 		<?php endif; ?>
 		
 			<div class="paper_title">
-				<?php the_title( '<span class="entry-title">', '</span>' ); ?>
+				<?php the_title( '<span class="paper_title_text">', '</span>' ); ?>
+				<span> - </span>
+				<span class="paper_identifier">
+				<?php echo $paper['identifier']; ?>
+				</span>
 				
 				<?php if (is_single() === false) : ?>
 				<span class="expand_icon genericon genericon-expand"></span>
@@ -88,10 +88,25 @@
 							<th>Type:</th>
 							<td><?php echo $paper['type']; ?></td>
 						</tr>
+						<?php if ($paper['type'] === 'journal') : ?>
+						<tr>
+							<th>Journal:</th>
+							<td><?php echo $paper['published_at']; ?></td>
+						</tr>
+						<?php elseif ($paper['type'] === 'conference') : ?>
+						<tr>
+							<th>Conference:</th>
+							<td><?php echo $paper['published_at']; ?></td>
+						</tr>
+						<?php endif; ?>
 						<tr>
 							<th>Download:</th>
 							<td><a href="<?php echo $paper['file']; ?>" target="_blank">PDF</a></td>
-						</tr>	
+						</tr>
+						<tr>
+							<th>Keywords:</th>
+							<td><?php echo $get_keyword_links(); ?></td>
+						</tr>
 					</tbody>
 				</table>
 				<?php if (is_single()) : ?>

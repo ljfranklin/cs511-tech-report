@@ -34,6 +34,8 @@ class TechReports {
 				title TEXT NOT NULL,
 				abstract TEXT NOT NULL,
 				publication_year YEAR NOT NULL,
+				published_at TEXT NULL,
+				keywords TEXT NULL,
 				type VARCHAR(40) NOT NULL,
 				PRIMARY KEY (paper_id)
 				);";
@@ -167,6 +169,8 @@ class TechReports {
 			$paper['authors'][$key]['full_name'] = $this->get_author_fullname($author);
 		}
 		
+		$paper['identifier'] = $this->get_paper_identifier($paper['paper_id'], $paper['publication_year']);
+		
 		return $paper;
 	}
 	
@@ -202,27 +206,34 @@ class TechReports {
 		}
 		return $full_name;
 	}
-	
-	private function get_paper_filename($paper_id, $title=NULL) {
-	
-		if (is_null($title)) {
-			$title = $this->paper_db->get_var("SELECT title FROM paper WHERE paper_id=$paper_id");
-		}
+    
+    private function get_paper_filename($paper_id, $publication_year=NULL) {
 	
     	$plugin_dir = plugin_dir_path( __FILE__ );
-    	$filename = preg_replace("/[^a-zA-Z0-9]+/", "", $title);
-    	$maxlength = 15;
-    	$filename = substr($filename, 0, $maxlength);
-    	$filename .= "-" . strval($paper_id);
+    
+    	$filename = $this->get_paper_identifier($paper_id, $publication_year);
     	
     	return sprintf('%suploads/%s.pdf',
-        		$plugin_dir,
-        	    $filename
-        	);
+    		$plugin_dir,
+    	    $filename
+    	);
+    }
+    
+    private function get_paper_identifier($paper_id, $publication_year=NULL) {
+    	
+    	if (is_null($publication_year)) {
+			$publication_year = $this->paper_db->get_var("SELECT publication_year FROM paper WHERE paper_id=$paper_id");
+		}
+    	
+    	$filename = "USC-CSSE-";
+    	$filename .= strval($publication_year);
+    	$filename .= "-" . strval($paper_id);
+    	
+    	return $filename;
     }
     
     private function get_paper_url($paper) {
-	 	$pdf_path = $this->get_paper_filename($paper['paper_id'], $paper['title']);
+	 	$pdf_path = $this->get_paper_filename($paper['paper_id'], $paper['publication_year']);
 		$base_path = ABSPATH;
 		return "../" . substr($pdf_path, strlen($base_path));
 	}
@@ -230,7 +241,7 @@ class TechReports {
 	public function get_search_results($query_term) {
 		
 		$search_query = "SELECT paper_id FROM paper 
-			WHERE title LIKE '%$query_term%' OR abstract LIKE '%$query_term%'
+			WHERE title LIKE '%$query_term%' OR abstract LIKE '%$query_term%' OR published_at LIKE '%$query_term%' OR keywords LIKE '%$query_term%'
 			UNION
 			SELECT paper_id FROM paperAuthorAssoc
 			INNER JOIN author ON 
@@ -323,31 +334,45 @@ class TechReports {
 		return $this->paper_db->get_var($query);
 	}
 	public function get_author_papers($au){
-		//$query= "select * from paper inner join paperAuthorAssoc on paperAuthorAssoc.author_id=".$au;
 		$query="select * from paper where paper_id in (select paper_id from paperAuthorAssoc where author_id=".$au.")";
 		return $this->paper_db->get_results($query,ARRAY_A);
 	}
 
-	//song Teng 
 	public function get_all_years() {
 		$query = "SELECT DISTINCT publication_year FROM paper";
-		return $this->paper_db->get_results($query);
+		return $this->paper_db->get_results($query, ARRAY_A);
 	}
-	// Song Teng 
+	
 	public function get_all_papers_by_year($year) {
 		$query = "SELECT * FROM paper WHERE publication_year = $year ORDER by title";
-		return $this->paper_db->get_results($query);
+		return $this->paper_db->get_results($query, ARRAY_A);
 	}
 
-	// Xiaoran
 	public function get_all_papers_by_type($type) {
 	
 		$query = "SELECT * FROM paper WHERE paper.type = '" . $type . "' ORDER BY title Asc";
 		return $this->paper_db->get_results($query);
-	
 	}
 
-	//xiaoran
+	public function generate_citation($paper) {
+       $citation = "";
+       $authors = $paper['authors'];
+       $num_authors = count($authors);
+
+       $citation .= $authors[0]['first_name'] . " " . $authors[0]['last_name'];
+       
+       if ($num_authors > 1) {
+           for ($i=1;$i<$num_authors-1;$i++) {
+               $author = $authors[$i];
+               $citation .= ", " . $author['first_name'] . " " . $author['last_name'];
+           }
+           $citation .= " and " . $authors[$num_authors-1]['first_name'] . " " . $authors[$num_authors-1]['last_name'];                       
+       }
+       $citation .= ", \" " . $paper['title'] . "\", ";
+       $citation .=  $paper['publication_year'] . ".";
+       return $citation;
+    }
+
 	public function get_paper_detail_url_by_paperID($id) {
 		
 		$query = "SELECT guid FROM wp_posts WHERE ID IN (SELECT post_id FROM wp_postmeta WHERE meta_key = 'paper_id' AND meta_value = '" . $id . "')";
@@ -355,21 +380,24 @@ class TechReports {
 		
 	}
 	public function add_new_paper($values) {
-       
+       	
         $this->paper_db->insert( 
 			'paper', 
 			array( 
 				'title' => trim($values['title']),
 				'abstract' => trim($values['abstract']),
 				'type' => trim($values['type']),
-				'publication_year' => $values['year']
+				'publication_year' => $values['publication_year'],
+				'published_at' => trim($values['published_at']),
+				'keywords' => trim($values['keywords'])
 			), 
 			array( 
 				'%s',
 				'%s',
 				'%s',
+				'%d',
 				'%s',
-				'%d'
+				'%s'
 			) 
 		);
 		$paper_id = $this->paper_db->insert_id;
@@ -425,12 +453,12 @@ class TechReports {
 		$post_id = wp_insert_post($new_post);
 		add_post_meta($post_id, 'paper_id', $paper_id);
 		
-		$this->process_file_upload($paper_id, trim($values['title']), $values['file']);
+		$this->process_file_upload($paper_id, trim($values['publication_year']), $values['file']);
 		
 		return $post_id;
     }
     
-    private function process_file_upload($paper_id, $title, $file) {
+    private function process_file_upload($paper_id, $year, $file) {
     
     	$finfo = new finfo(FILEINFO_MIME_TYPE);
     	if (false === array_search(
@@ -445,32 +473,35 @@ class TechReports {
     	
 		if (!move_uploaded_file(
         	$file['tmp_name'],
-        	$this->get_paper_filename($paper_id, $title)
+        	$this->get_paper_filename($paper_id, $year)
     	)) {
     	    throw new RuntimeException('Failed to move uploaded file.');
     	}
     }
     
-    private function delete_old_file($paper_id, $old_title) {
-    	unlink($this->get_paper_filename($paper_id, $old_title));
+    private function delete_old_file($paper_id, $old_year) {
+    	unlink($this->get_paper_filename($paper_id, $old_year));
     }
     
-    private function rename_old_file($paper_id, $old_title, $new_title) {
-    	rename($this->get_paper_filename($paper_id, $old_title), $this->get_paper_filename($paper_id, $new_title));
+    private function rename_old_file($paper_id, $old_year, $new_year) {
+    	rename($this->get_paper_filename($paper_id, $old_year), $this->get_paper_filename($paper_id, $new_year));
     }
     
-    public function update_paper($new_values, $old_title) {
+    public function update_paper($new_values, $old_year) {
 	    global $wpdb;
         
         $paper_id = $new_values['paper_id'];
         $title = trim($new_values['title']);
+        $year = trim($new_values['publication_year']);
         $this->paper_db->update( 
 			'paper', 
 			array( 
 				'title' => $title,
 				'abstract' => trim($new_values['abstract']),
 				'type' => trim($new_values['type']),
-				'publication_year' => $new_values['year']
+				'publication_year' => $year,
+				'published_at' => trim($new_values['published_at']),
+				'keywords' => trim($new_values['keywords'])
 			), 
 			array(
 				'paper_id' => $paper_id
@@ -479,7 +510,9 @@ class TechReports {
 				'%s',
 				'%s',
 				'%s',
-				'%d'
+				'%d',
+				'%s',
+				'%s'
 			),
 			array(
 				'%d'
@@ -568,13 +601,13 @@ class TechReports {
 		wp_update_post($updatedPost);
 		
 		if (empty($new_values['file']['tmp_name']) === false) {
-			$this->process_file_upload($paper_id, $title, $new_values['file']);
+			$this->process_file_upload($paper_id, $year, $new_values['file']);
 		}
 		
-		if (empty($new_values['file']['tmp_name']) && $old_title !== $title) {
-    		$this->rename_old_file($paper_id, $old_title, $title);
-    	} else if ($old_title !== $title) {
-			$this->delete_old_file($paper_id, $old_title);
+		if (empty($new_values['file']['tmp_name']) && $old_year !== $year) {
+    		$this->rename_old_file($paper_id, $old_year, $year);
+    	} else if ($old_year !== $year) {
+			$this->delete_old_file($paper_id, $old_year);
 		} 
 		
 		return $post_id;

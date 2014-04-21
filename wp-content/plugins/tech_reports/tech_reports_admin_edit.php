@@ -1,36 +1,18 @@
 <?php
 
 	$tech_report = new TechReports();
-
-	$new_authors = isset($_POST['new_authors']) ? $_POST['new_authors'] : array();
-   	$existing_authors = isset($_POST['existing_authors']) ? $_POST['existing_authors'] : array();
+   	
     if(isset($_POST['action']) && $_POST['action'] == 'create') {
-    	$values = array(
-    		'title' => $_POST['paper_title'],
-    		'existing_authors' => $existing_authors,
-    		'new_authors' => $new_authors,
-    		'abstract' => $_POST['paper_abstract'],
-    		'year' => $_POST['paper_year'],
-    		'type' => $_POST['paper_type'],
-    		'file' => $_FILES['paper_upload']
-    	);	
+    	$values = get_values();
     	$post_id = $tech_report->add_new_paper($values);
 	
 		wp_redirect(get_site_url()."/?p=$post_id");
 		exit;
     } 
     if(isset($_POST['action']) && $_POST['action'] == 'edit') {
-    	$values = array(
-    		'paper_id' => $_POST['paper_id'],
-    		'title' => $_POST['paper_title'],
-    		'existing_authors' => $_POST['existing_authors'],
-    		'new_authors' => $_POST['new_authors'],
-    		'abstract' => $_POST['paper_abstract'],
-    		'year' => $_POST['paper_year'],
-    		'type' => $_POST['paper_type'],
-    		'file' => $_FILES['paper_upload']
-    	);
-    	$post_id = $tech_report->update_paper($values, $_POST['previous_title']);
+    	$values = get_values();
+    	$values['paper_id'] = $_POST['paper_id'];
+    	$post_id = $tech_report->update_paper($values, $_POST['previous_year']);
 		
 		wp_redirect(get_site_url()."/?p=$post_id");
 		exit;
@@ -42,6 +24,33 @@
 	} else {
 		$paper = array();
 		$is_editing = false;
+	}
+	
+	function get_values() {
+	
+		$new_authors = isset($_POST['new_authors']) ? $_POST['new_authors'] : array();
+   		$existing_authors = isset($_POST['existing_authors']) ? $_POST['existing_authors'] : array();
+	
+		$type = $_POST['paper_type'];
+    	if ($type === 'journal') {
+    		$published_at = trim($_POST['paper_journal']);
+    	} else if ($type === 'conference') {
+    		$published_at = trim($_POST['paper_conference']);
+    	} else {
+    		$published_at = NULL;
+    	}
+    	
+    	return array(
+    		'title' => $_POST['paper_title'],
+    		'existing_authors' => $existing_authors,
+    		'new_authors' => $new_authors,
+    		'abstract' => $_POST['paper_abstract'],
+    		'publication_year' => $_POST['paper_year'],
+    		'type' => $type,
+    		'published_at' => $published_at,
+    		'keywords' => $_POST['paper_keywords'],
+    		'file' => $_FILES['paper_upload']
+    	);
 	}
 	
 	$get_existing_value = function($name) use ($paper) {
@@ -130,7 +139,27 @@ $(document).ready(function() {
 			return;
 		}
 	});
+	
+	$('#paper_type').change(updateJournalConferenceDisplay).change();
 });
+
+function updateJournalConferenceDisplay() {
+	var selectedType = $(this).val();
+	var $journalInput = $('.journal_name');
+	var $conferenceInput = $('.conference_name');
+	
+	$journalInput.hide();
+	$conferenceInput.hide();
+	$journalInput.find('input').prop('required', false);
+	$conferenceInput.find('input').prop('required', false);
+	if (selectedType === 'journal') {
+		$journalInput.show();
+		$journalInput.find('input').prop('required', true);
+	} else if (selectedType === 'conference') {
+		$conferenceInput.show();
+		$conferenceInput.find('input').prop('required', true);
+	}
+}
 
 
 </script>
@@ -141,7 +170,7 @@ $(document).ready(function() {
 		<input type="hidden" name="action" value="<?php echo $is_editing ? 'edit' : 'create' ?>"/>
 		<?php if ($is_editing) { ?>
 			<input type="hidden" name="paper_id" value="<?php echo $get_existing_value('paper_id') ?>"/>
-			<input type="hidden" name="previous_title" value="<?php echo $get_existing_value('title') ?>"/>
+			<input type="hidden" name="previous_year" value="<?php echo $get_existing_value('publication_year') ?>"/>
 		<?php } ?>
 		<table class="form-table">
 			<tbody>
@@ -178,6 +207,7 @@ $(document).ready(function() {
 					</th>
 					<td>
 						<select id="paper_type" name="paper_type" required>
+							<option value="">Select Paper Type</option>
 							<option value="tech-report" <?php if ($get_existing_value('type') === "tech-report") echo "selected=\"selected\"" ?>>Technical Report</option>
 							<option value="journal" <?php if ($get_existing_value('type') === "journal") echo "selected=\"selected\"" ?>>Journal Publication</option>
 							<option value="conference" <?php if ($get_existing_value('type') === "conference") echo "selected=\"selected\"" ?>>Conference Publication</option>
@@ -185,12 +215,36 @@ $(document).ready(function() {
 						</select>
 					</td>
 				</tr>
+				<tr class="journal_name" style="display: none">
+ 					<th>
+ 						<label for="paper_journal">Journal Name:</label>
+ 					</th>
+ 					<td>
+ 						<input id="paper_journal" type="text" name="paper_journal" value="<?php echo $get_existing_value('published_at') ?>" placeholder="Journal Name">
+ 					</td>
+ 				</tr>
+ 				<tr class="conference_name" style="display: none">
+ 					<th>
+ 						<label for="paper_conference">Conference Name:</label>
+ 					</th>
+ 					<td>
+ 						<input id="paper_conference" type="text" name="paper_conference" value="<?php echo $get_existing_value('published_at') ?>" placeholder="Conference Name">
+ 					</td>
+ 				</tr>
 				<tr>
 					<th>
 						<label for="paper_abstract">Abstract:</label>
 					</th>
 					<td>
 						<textarea id="paper_abstract" name="paper_abstract" rows="10" cols="30" required><?php echo $get_existing_value('abstract') ?></textarea>
+					</td>
+				</tr>
+				<tr>
+					<th>
+						<label for="paper_keywords">Keywords (comma separated):</label>
+					</th>
+					<td>
+						<input id="paper_keywords" name="paper_keywords" size="30" value="<?php echo $get_existing_value('keywords') ?>" placeholder="Enter keywords [optional]">
 					</td>
 				</tr>
 				<tr>
