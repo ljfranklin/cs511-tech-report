@@ -243,40 +243,6 @@ class TechReports {
 		return "../" . substr($pdf_path, strlen($base_path));
 	}
 	
-	public function get_search_results($query_term) {
-		
-		$search_query = "SELECT paper_id FROM paper 
-			WHERE title LIKE '%$query_term%' OR abstract LIKE '%$query_term%' OR published_at LIKE '%$query_term%' OR keywords LIKE '%$query_term%'
-			UNION
-			SELECT paper_id FROM paperAuthorAssoc
-			INNER JOIN author ON 
-			(
-				author.first_name LIKE '%$query_term%' OR
-				author.middle_name LIKE '%$query_term%' OR
-				author.last_name LIKE '%$query_term%'
-			) AND
-			paperAuthorAssoc.author_id=author.author_id";
-	
-		$paper_ids = $this->paper_db->get_col($search_query);
-		if ($paper_ids == NULL) {
-			return new WP_Query();
-		}
-		
-		$args = array (
-			'meta_query' => array(
-	       		array(
-	           		'key' => 'paper_id',
-	           		'value' => $paper_ids,
-	           		'compare' => 'IN',
-	       		)
-	   		)
-		);
- 
-		$search_query = new WP_Query( $args );
-		
-		return $search_query;
-	}
-	
 	public function delete_paper($paper_id) {
 		global $wpdb;
 
@@ -675,6 +641,34 @@ class TechReports {
     	$query = $this->get_by_year_query($year);
     	
     	$this->queried_papers = $this->get_papers_from_query($query);
+    }
+    
+    public function query_papers_by_search($query_term) {
+    
+    	$query = "SELECT paper.*, author.* FROM paper 
+    		INNER JOIN paperAuthorAssoc ON paper.paper_id=paperAuthorAssoc.paper_id 
+    		INNER JOIN author ON author.author_id=paperAuthorAssoc.author_id
+    		WHERE (title LIKE '%$query_term%' OR abstract LIKE '%$query_term%' OR published_at LIKE '%$query_term%' OR keywords LIKE '%$query_term%') OR
+    		(first_name LIKE '%$query_term%' OR
+			middle_name LIKE '%$query_term%' OR
+			last_name LIKE '%$query_term%')";
+    
+    /*
+    	$query = "SELECT paper.*, author.* FROM paper 
+			WHERE title LIKE '%$query_term%' OR abstract LIKE '%$query_term%' OR published_at LIKE '%$query_term%' OR keywords LIKE '%$query_term%'
+			UNION
+			SELECT paper_id FROM paperAuthorAssoc
+			INNER JOIN author ON 
+			(
+				author.first_name LIKE '%$query_term%' OR
+				author.middle_name LIKE '%$query_term%' OR
+				author.last_name LIKE '%$query_term%'
+			) AND
+			paperAuthorAssoc.author_id=author.author_id";
+	*/
+		$this->queried_papers = $this->get_papers_from_query($query);
+		
+		$this->is_single = false;
     }
     
     public function get_all_paper_years() {

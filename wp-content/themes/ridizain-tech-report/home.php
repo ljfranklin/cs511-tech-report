@@ -23,7 +23,7 @@ get_header(); ?>
 		</header>
 		<?php else : ?>
 		<header>
-			<h1 class="entry-title">Detail</h1>
+			<h1 class="entry-title">Paper Details</h1>
 		</header>
 		<?php endif; ?>
         
