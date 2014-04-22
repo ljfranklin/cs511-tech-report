@@ -10,6 +10,7 @@
 		exit;
     } 
     if(isset($_POST['action']) && $_POST['action'] == 'edit') {
+    	error_log(json_encode($_POST));
     	$values = get_values();
     	$values['paper_id'] = $_POST['paper_id'];
     	$paper_id = $tech_report->update_paper($values, $_POST['previous_year']);

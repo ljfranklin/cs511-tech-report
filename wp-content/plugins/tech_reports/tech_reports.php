@@ -44,6 +44,7 @@ class TechReports {
 				published_at TEXT NULL,
 				keywords TEXT NULL,
 				type VARCHAR(40) NOT NULL,
+				download_count INT NOT NULL DEFAULT 0,
 				PRIMARY KEY (paper_id)
 				);";
 			$paper_db->query($sql);
@@ -63,6 +64,7 @@ class TechReports {
 			$sql = "CREATE TABLE if not exists paperAuthorAssoc (
 				author_id INT NOT NULL,
 				paper_id INT NOT NULL,
+				author_index INT NOT NULL,
 				PRIMARY KEY (author_id, paper_id),
 				FOREIGN KEY (author_id) REFERENCES author(author_id),
 				FOREIGN KEY (paper_id) REFERENCES paper(paper_id)
@@ -664,6 +666,10 @@ class TechReports {
     public function query_papers_by_year($year = NULL) {
     	if ($year === NULL) {
     		$year = $this->get_most_recent_year();
+    	}
+    	if ($year === NULL) {
+    		$this->queried_papers = array();
+    		return;
     	}
     	
     	$query = $this->get_by_year_query($year);
