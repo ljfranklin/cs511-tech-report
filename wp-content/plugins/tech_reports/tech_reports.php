@@ -18,8 +18,10 @@ class TechReports {
 	private $total_results = 0;
 
 	function __construct($paper_id=NULL) {
-		$this->paper_db = new wpdb("wordpress", "wp1234", "tech_papers", "localhost");
-		$this->post_db = new wpdb("wordpress", "wp1234", "wordpress", "localhost");
+		global $wpdb;
+	
+		$this->paper_db = new wpdb(DB_USER, DB_PASSWORD, PAPER_DB_NAME, DB_HOST);
+		$this->post_db = $wpdb;
 	}
 	
 	public static function plugin_setup() {
@@ -34,7 +36,7 @@ class TechReports {
 	}
 
 	private static function create_plugin_table() {
-		$paper_db = new wpdb("wordpress", "wp1234", "tech_papers", "localhost");
+		$paper_db = new wpdb(DB_USER, DB_PASSWORD, PAPER_DB_NAME, DB_HOST);
 		if($paper_db->get_var("SHOW TABLES LIKE 'paper'") !== 'paper') {
 			$sql = "CREATE TABLE if not exists paper (
 				paper_id INT NOT NULL AUTO_INCREMENT, 
@@ -159,30 +161,6 @@ class TechReports {
  		add_submenu_page("list-papers", "New Paper", "Add Paper", "edit_posts", "upload-paper", array("TechReports", "tech_reports_admin_edit"));
 	}
 	
-	public function get_paper_for_post($post_id) {
-		$paper_id = get_post_meta($post_id, 'paper_id', true);
-		$paper = $this->paper_db->get_row("SELECT * FROM paper WHERE paper_id=$paper_id", ARRAY_A);
-		if ($paper == NULL) {	
-			return array();
-		}
-		$paper['file'] = $this->get_paper_url($paper);
-		
-		$authors_query = "SELECT author.* FROM paperAuthorAssoc INNER JOIN author 
-			ON paperAuthorAssoc.paper_id=$paper_id AND paperAuthorAssoc.author_id=author.author_id";
-		$paper['authors'] = $this->paper_db->get_results($authors_query, ARRAY_A);
-		if (is_null($paper['authors'])) {
-			$paper['authors'] = array();
-		}
-		
-		foreach ($paper['authors'] as $key => $author) {
-			$paper['authors'][$key]['full_name'] = $this->get_author_fullname($author);
-		}
-		
-		$paper['identifier'] = $this->get_paper_identifier($paper['paper_id'], $paper['publication_year']);
-		
-		return $paper;
-	}
-	
 	private function get_author_fullname($author) {
 		$full_name = $author['first_name'];
 		if (strlen($author['middle_name']) > 0) {
@@ -227,17 +205,6 @@ class TechReports {
 	}
 	
 	public function delete_paper($paper_id) {
-		global $wpdb;
-
-		$query = "SELECT wposts.ID
-			FROM ".$wpdb->posts." AS wposts
-			INNER JOIN ".$wpdb->postmeta." AS wpostmeta
-			ON wpostmeta.post_id = wposts.ID
-			AND wpostmeta.meta_key = 'paper_id'
-			AND wpostmeta.meta_value = '$paper_id'";
-		
-		$post_id = $wpdb->get_var($query);
-		wp_delete_post($post_id, true);
 		
 		unlink($this->get_paper_filename($paper_id));
 		
@@ -249,20 +216,6 @@ class TechReports {
 	}
 
 	public function delete_multiple_papers($paper_ids) {
-		global $wpdb;
-	
-		$id_string = "'" . implode("','", $paper_ids) . "'";
-		$query = "SELECT wposts.ID
-			FROM ".$wpdb->posts." AS wposts
-			INNER JOIN ".$wpdb->postmeta." AS wpostmeta
-			ON wpostmeta.post_id = wposts.ID
-			AND wpostmeta.meta_key = 'paper_id'
-			AND wpostmeta.meta_value IN ($id_string)";
-		
-		$post_ids = $wpdb->get_col($query);
-		foreach ($post_ids as $post_id) {
-			wp_delete_post($post_id, true);
-		}	
 		
 		foreach ($paper_ids as $paper_id){
 			unlink($this->get_paper_filename($paper_id));
@@ -331,12 +284,6 @@ class TechReports {
        return $citation;
     }
 
-	public function get_paper_detail_url_by_paperID($id) {
-		
-		$query = "SELECT guid FROM wp_posts WHERE ID IN (SELECT post_id FROM wp_postmeta WHERE meta_key = 'paper_id' AND meta_value = '" . $id . "')";
-		return $this->post_db->get_row($query);
-		
-	}
 	public function add_new_paper($values) {
        	
         $this->paper_db->insert( 
@@ -401,19 +348,6 @@ class TechReports {
 			);
 		}
 		
-		$user_id = get_current_user_id();
-		$new_post = array(
-			'post_title' => trim($values['title']),
-			'post_content' => '',
-			'post_status' => 'publish',
-			'post_date' => date('Y-m-d H:i:s'),
-			'post_author' => $user_id,
-			'post_type' => 'post',
-			'post_category' => array(0)
-		);
-		$post_id = wp_insert_post($new_post);
-		add_post_meta($post_id, 'paper_id', $paper_id);
-		
 		$this->process_file_upload($paper_id, trim($values['publication_year']), $values['file']);
 		
 		return $paper_id;
@@ -449,7 +383,6 @@ class TechReports {
     }
     
     public function update_paper($new_values, $old_year) {
-	    global $wpdb;
         
         $paper_id = $new_values['paper_id'];
         $title = trim($new_values['title']);
@@ -534,21 +467,6 @@ class TechReports {
 		
 		//delete authors not tied to paper
 		$this->paper_db->query("DELETE FROM author WHERE author_id NOT IN (SELECT author_id FROM paperAuthorAssoc)");
-
-		$query = "SELECT wposts.ID
-			FROM ".$wpdb->posts." AS wposts
-			INNER JOIN ".$wpdb->postmeta." AS wpostmeta
-			ON wpostmeta.post_id = wposts.ID
-			AND wpostmeta.meta_key = 'paper_id'
-			AND wpostmeta.meta_value = '$paper_id'";
-		
-		$post_id = $wpdb->get_var($query);
-		
-		$updatedPost = array(
-			'post_title' => $title,
-			'ID' => $post_id
-		);
-		wp_update_post($updatedPost);
 		
 		if (empty($new_values['file']['tmp_name']) === false) {
 			$this->process_file_upload($paper_id, $year, $new_values['file']);

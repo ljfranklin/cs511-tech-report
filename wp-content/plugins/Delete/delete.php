@@ -73,8 +73,15 @@ Description: Remove menu items from dashboard.
 		return '';
 	}
 	
-	$wp_roles = new WP_Roles();
-	$wp_roles->remove_role("editor");
-	$wp_roles->remove_role("author");
-	$wp_roles->remove_role("subscriber");
+	
+	register_activation_hook( __FILE__, 'activate_delete_plugin');
+	function activate_delete_plugin() {
+		remove_role("editor");
+		remove_role("author");
+		remove_role("subscriber");
+	
+		//delete sample posts
+		wp_delete_post(1, true);
+		wp_delete_post(2, true);
+	}
 ?>

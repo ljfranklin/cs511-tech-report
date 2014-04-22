@@ -18,6 +18,8 @@
 /** The name of the database for WordPress */
 define('DB_NAME', 'wordpress');
 
+define('PAPER_DB_NAME', 'tech_papers');
+
 /** MySQL database username */
 define('DB_USER', 'wordpress');
 
