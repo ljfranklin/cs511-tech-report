@@ -1,9 +1,20 @@
 <?php
 	
 	$tech_report = new TechReports();
-	$tech_report->query_papers_by_author();
 	
 	$initials = $tech_report->get_author_initials();
+	
+	if (isset($_GET['letter'])) {
+		$first_letter = $_GET['letter'];
+	} else if (empty($initials) === false) {
+		$first_letter = $initials[0];
+	} else {
+		$first_letter = 'A';
+	}
+	
+	$tech_report->query_papers_by_author($first_letter);
+	
+	
 ?>
 	
 	<div id="primary" class="content-area">
@@ -12,9 +23,9 @@
         
         <div class="author_pagination_links pagination_links">
     		<?php foreach (range('A', 'Z') as $letter) : ?>
-    			<span>
+    			<span class="<?php if ($first_letter === $letter) echo 'current_page'; ?>">
     			<?php if (in_array($letter, $initials)) : ?>
-				<a href="#initial-<?php echo $letter; ?>">
+				<a href="<?php echo get_permalink() . '&letter=' . $letter; ?>">
 					<?php echo $letter; ?>
 				</a>
 				<?php else : ?>
@@ -26,6 +37,10 @@
 			<?php endforeach; ?>
         </div>
         
+        <h1 class="author_initial">
+			<?php echo $first_letter; ?>
+		</h1>
+        
 		<?php if ( $tech_report->have_authors() ) : ?>
 			
 			<?php 
@@ -33,17 +48,6 @@
 				$last_initial = NULL;
 				while ( $tech_report->have_authors() ) : $tech_report->the_author(); 
 			?>
-				<?php $initial = strtoupper(substr($tech_report->get_author_field('last_name'), 0, 1)); ?>
-					
-				<?php if ($last_initial !== $initial) : ?>
-					<h1 class="author_initial">
-						<a name="initial-<?php echo $initial; ?>">
-							<?php echo $initial; ?>
-						</a>
-					</h1>
-					
-					<?php $last_initial = $initial; ?>
-				<?php endif; ?>
 				
 				<div class="paper_display paper_expand">
 					<div class="paper_title">

@@ -594,9 +594,9 @@ class TechReports {
     	return $results;
     }
     
-    public function query_papers_by_author() {
+    public function query_papers_by_author($first_letter) {
     	$this->is_single = false;
-    	$query = $this->get_all_papers_query() . ' ORDER BY author.last_name ASC';
+    	$query = $this->get_all_papers_query() . " WHERE author.last_name LIKE '$first_letter%' ORDER BY author.last_name ASC";
     	
     	$papers = $this->get_papers_from_query($query);
     	
@@ -790,9 +790,13 @@ class TechReports {
     
     public function get_author_initials() {
     
+    	$last_names = $this->paper_db->get_col(
+    		"SELECT DISTINCT last_name FROM author ORDER BY last_name ASC"
+    	);
+    
     	$initials = array();
-    	foreach ($this->queried_authors as $author) {
-    		$first_initial = substr($author['last_name'], 0, 1);
+    	foreach ($last_names as $name) {
+    		$first_initial = substr($name, 0, 1);
     		if (in_array($first_initial, $initials) === false) {
     			$initials[] = $first_initial;
     		}
