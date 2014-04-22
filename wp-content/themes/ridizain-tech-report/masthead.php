@@ -1,7 +1,9 @@
     
 	<header id="masthead" class="site-header" role="banner">
 		<div class="csse-banner">
-			<img src="<?php echo get_stylesheet_directory_uri() . '/images/cropped-usc-viterbi-logo5-color_fixed-1024x98.png'; ?>">
+			<a href="http://csse.usc.edu/">
+				<img src="<?php echo get_stylesheet_directory_uri() . '/images/cropped-usc-viterbi-logo5-color_fixed-1024x98.png'; ?>">
+			</a>
 		</div>
 		<div class="header-main">
 			<div class="header-top">
