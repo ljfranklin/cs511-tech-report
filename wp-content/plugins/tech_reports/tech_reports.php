@@ -340,7 +340,11 @@ class TechReports {
            }
            $citation .= " and " . $authors[$num_authors-1]['first_name'] . " " . $authors[$num_authors-1]['last_name'];                       
        }
-       $citation .= ", \" " . $paper['title'] . "\", ";
+       $citation .= ". \"<i>" . $paper['title'] . "</i>\". ";
+       if ($paper['published_at'] !== NULL && strlen($paper['published_at']) > 0) {
+       		$citation .= $paper['published_at'] . ", ";
+       }
+       
        $citation .=  $paper['publication_year'] . ".";
        return $citation;
     }
