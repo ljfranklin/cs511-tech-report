@@ -6,8 +6,14 @@ get_header(); ?>
     	$tech_report = new TechReports(); 
     	
     	$paper_id = isset($_GET['paper']) ? $_GET['paper'] : NULL;
+    	$current_page = isset($_GET['pagination']) ? intval($_GET['pagination']) : 1;
+    	
     	if ($paper_id === NULL) {
-			$tech_report->query_recent_papers(20);
+    		$page_args = array(
+				'current_page' => $current_page,
+				'per_page' => 20
+			);
+			$tech_report->query_recent_papers($page_args);
 		} else {
 			$tech_report->query_papers($paper_id);
 		}
@@ -28,7 +34,19 @@ get_header(); ?>
 		<?php endif; ?>
         
 		<?php
-			if ( $tech_report->have_papers() ) :
+			if ( $tech_report->have_papers() ) : ?>
+			
+				<div class="pagination_links">
+					<?php for ($i = 1; $i <= $tech_report->get_total_pages(); $i++) : ?>
+						<span class="<?php if ($current_page === $i) echo 'current_page'; ?>">
+							<a href="<?php echo site_url() . '/?pagination=' . $i ?>">
+								<?php echo $i; ?>
+							</a>
+						</span>
+					<?php endfor; ?>
+				</div>
+					
+				<?php
 				// Start the Loop.
 				while ( $tech_report->have_papers() ) : $tech_report->the_paper();
 					include('content.php');

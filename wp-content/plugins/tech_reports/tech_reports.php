@@ -618,11 +618,31 @@ class TechReports {
     	$this->queried_authors = array_values($author_to_papers);
     }
     
-    public function query_recent_papers($limit) {
-    	$query = $this->get_all_papers_query() . " ORDER BY paper_id DESC LIMIT $limit";
-		$this->is_single = false;
+    public function query_recent_papers($page_args) {
+    	$query = "SELECT paper.*, author.* FROM paper 
+    		INNER JOIN paperAuthorAssoc ON paper.paper_id=paperAuthorAssoc.paper_id 
+    		INNER JOIN author ON author.author_id=paperAuthorAssoc.author_id
+    		ORDER BY paper.paper_id DESC";
+	
+		$this->set_paged_query($query, $page_args);
+    }
     
-    	$this->queried_papers = $this->get_papers_from_query($query);
+    private function set_paged_query($query, $page_args) {
+    	$count_query = "SELECT DISTINCT paper.paper_id FROM ($query) as paper";
+		$paper_ids = $this->paper_db->get_col($count_query);
+		
+		if (count($paper_ids) === 0) {
+			$this->queried_papers = array();
+			return;
+		}
+		
+		$paged_ids = array_slice($paper_ids, ($page_args['current_page'] - 1)*$page_args['per_page'], $page_args['per_page']); 
+		
+		$query = "SELECT * FROM ($query) as paper WHERE paper.paper_id IN (" . implode(', ', $paged_ids) . ")";
+		
+		$this->total_page_count = ceil(count($paper_ids) / $page_args['per_page']);
+		$this->queried_papers = $this->get_papers_from_query($query);
+		$this->is_single = false;
     }
     
     public function query_papers($paper_id = NULL) {
@@ -658,22 +678,7 @@ class TechReports {
 			middle_name LIKE '%$query_term%' OR
 			last_name LIKE '%$query_term%')";
 	
-		$count_query = "SELECT DISTINCT paper.paper_id FROM ($query) as paper";
-		$paper_ids = $this->paper_db->get_col($count_query);
-		
-		if (count($paper_ids) === 0) {
-			$this->queried_papers = array();
-			return;
-		}
-		
-		$this->total_page_count = ceil(count($paper_ids) / $page_args['per_page']);
-		$paged_ids = array_slice($paper_ids, ($page_args['current_page'] - 1)*$page_args['per_page'], $page_args['per_page']); 
-		
-		$query .= " AND paper.paper_id IN (" . implode(', ', $paged_ids) . ")";
-		
-		$this->queried_papers = $this->get_papers_from_query($query);
-		
-		$this->is_single = false;
+		$this->set_paged_query($query, $page_args);
     }
     
     public function get_all_paper_years() {
