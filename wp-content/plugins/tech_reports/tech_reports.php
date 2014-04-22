@@ -183,27 +183,6 @@ class TechReports {
 		return $paper;
 	}
 	
-	public function get_paper($paper_id) {
-		$paper = $this->paper_db->get_row("SELECT * FROM paper WHERE paper_id=$paper_id", ARRAY_A);
-		if ($paper == NULL) {	
-			return array();
-		}
-		$paper['file'] = $this->get_paper_url($paper);
-		
-		$authors_query = "SELECT author.* FROM paperAuthorAssoc INNER JOIN author 
-			ON paperAuthorAssoc.paper_id=$paper_id AND paperAuthorAssoc.author_id=author.author_id";
-		$paper['authors'] = $this->paper_db->get_results($authors_query, ARRAY_A);
-		if (is_null($paper['authors'])) {
-			$paper['authors'] = array();
-		}
-		
-		foreach ($paper['authors'] as $key => $author) {
-			$paper['authors'][$key]['full_name'] = $this->get_author_fullname($author);
-		}
-		
-		return $paper;
-	}
-	
 	private function get_author_fullname($author) {
 		$full_name = $author['first_name'];
 		if (strlen($author['middle_name']) > 0) {
@@ -381,7 +360,7 @@ class TechReports {
 		);
 		$paper_id = $this->paper_db->insert_id;
 		
-		$author_ids = $values['existing_authors'];
+		$authors = $values['existing_authors'];
 		
 		//Insert new authors
 		foreach ($values['new_authors'] as $new_author) {
@@ -401,18 +380,21 @@ class TechReports {
 				)
 			);
 			$new_author_id = $this->paper_db->insert_id;
-			array_push($author_ids, $new_author_id);
+			$new_author['author_id'] = $new_author_id;
+			array_push($authors, $new_author);
 		}
 		
 		//Add association between papers and authors
-		foreach ($author_ids as $author_id) {
+		foreach ($authors as $author) {
 			$this->paper_db->insert(
 				'paperAuthorAssoc',
 				array(
 					'paper_id' => $paper_id,
-					'author_id' => $author_id
+					'author_id' => $author['author_id'],
+					'author_index' => $author['author_index']
 				),
 				array(
+					'%d',
 					'%d',
 					'%d'
 				)
@@ -498,7 +480,7 @@ class TechReports {
 			)
 		);
 		
-		$author_ids = $new_values['existing_authors'];
+		$authors = $new_values['existing_authors'];
 		
 		//Insert new authors
 		foreach ($new_values['new_authors'] as $new_author) {
@@ -518,47 +500,36 @@ class TechReports {
 				)
 			);
 			$new_author_id = $this->paper_db->insert_id;
-			array_push($author_ids, $new_author_id);
+			$new_author['author_id'] = $new_author_id;
+			array_push($authors, $new_author);
 		}
 		
-		$already_added_authors = $this->paper_db->get_col("SELECT author_id FROM paperAuthorAssoc WHERE paper_id=$paper_id");
+		//remove existing associations
+		$this->paper_db->delete(
+			'paperAuthorAssoc',
+			array(
+				'paper_id' => $paper_id
+			),
+			array(
+				'%d'
+			)
+		);
 		
 		//Add association between papers and authors
-		foreach ($author_ids as $author_id) {
-			
-			$already_added = in_array($author_id, $already_added_authors);
-		
-			if ($already_added === false) {
-				$this->paper_db->insert(
-					'paperAuthorAssoc',
-					array(
-						'paper_id' => $paper_id,
-						'author_id' => $author_id
-					),
-					array(
-						'%d',
-						'%d'
-					)
-				);
-			}
-		}
-		
-		foreach ($already_added_authors as $author_id) {
-			$author_removed = (in_array($author_id, $author_ids) === false);
-		
-			if ($author_removed) {
-				$this->paper_db->delete(
-					'paperAuthorAssoc',
-					array(
-						'paper_id' => $paper_id,
-						'author_id' => $author_id
-					),
-					array(
-						'%d',
-						'%d'
-					)
-				);
-			}
+		foreach ($authors as $author) {
+			$this->paper_db->insert(
+				'paperAuthorAssoc',
+				array(
+					'paper_id' => $paper_id,
+					'author_id' => $author['author_id'],
+					'author_index' => $author['author_index']
+				),
+				array(
+					'%d',
+					'%d',
+					'%d'
+				)
+			);
 		}
 		
 		//delete authors not tied to paper
@@ -603,29 +574,46 @@ class TechReports {
     
     public function query_papers_by_author($first_letter) {
     	$this->is_single = false;
-    	$query = $this->get_all_papers_query() . " WHERE author.last_name LIKE '$first_letter%' ORDER BY author.last_name ASC";
+    	$query = "SELECT paper.*, author.*, paperAuthorAssoc.author_index FROM paper 
+    		INNER JOIN paperAuthorAssoc ON paper.paper_id=paperAuthorAssoc.paper_id
+    		INNER JOIN author ON author.author_id=paperAuthorAssoc.author_id
+			WHERE paper.paper_id IN (
+				SELECT DISTINCT paperAuthorAssoc.paper_id FROM author
+				INNER JOIN paperAuthorAssoc ON author.author_id=paperAuthorAssoc.author_id
+			 	WHERE author.last_name LIKE '$first_letter%'
+			)
+    		ORDER BY paperAuthorAssoc.author_index ASC";
     	
     	$papers = $this->get_papers_from_query($query);
     	
     	$author_to_papers = array();
     	foreach ($papers as $paper) {
     		foreach ($paper['authors'] as $author) {
-    			$author_id = $author['author_id'];
-    			if(!array_key_exists($author_id, $author_to_papers)) {
-    				$author_to_papers[$author_id] = $author;
-    			}
-    			$author_to_papers[$author_id]['papers'][] = $paper;
+				if (substr($author['last_name'], 0, 1) === $first_letter) {
+					$author_id = $author['author_id'];
+					if(!array_key_exists($author_id, $author_to_papers)) {
+						$author_to_papers[$author_id] = $author;
+					}
+					
+					$author_to_papers[$author_id]['papers'][] = $paper;
+				}
     		}
     	}
+    	
+    	//sort by author last name
+    	$name_cmp = function($a, $b) {
+    		return strcmp($a['last_name'], $b['last_name']);
+    	};
+    	usort($author_to_papers, $name_cmp);
     	
     	$this->queried_authors = array_values($author_to_papers);
     }
     
     public function query_recent_papers($page_args) {
-    	$query = "SELECT paper.*, author.* FROM paper 
+    	$query = "SELECT paper.*, author.*, paperAuthorAssoc.author_index FROM paper 
     		INNER JOIN paperAuthorAssoc ON paper.paper_id=paperAuthorAssoc.paper_id 
     		INNER JOIN author ON author.author_id=paperAuthorAssoc.author_id
-    		ORDER BY paper.paper_id DESC";
+    		ORDER BY paper.paper_id DESC, paperAuthorAssoc.author_index ASC";
 	
 		$this->set_paged_query($query, $page_args);
     }
@@ -679,13 +667,14 @@ class TechReports {
     
     public function query_papers_by_search($query_term, $page_args) {
     
-    	$query = "SELECT paper.*, author.* FROM paper 
+    	$query = "SELECT paper.*, author.*, paperAuthorAssoc.author_index FROM paper 
     		INNER JOIN paperAuthorAssoc ON paper.paper_id=paperAuthorAssoc.paper_id 
     		INNER JOIN author ON author.author_id=paperAuthorAssoc.author_id
     		WHERE (title LIKE '%$query_term%' OR abstract LIKE '%$query_term%' OR published_at LIKE '%$query_term%' OR keywords LIKE '%$query_term%' OR
     		first_name LIKE '%$query_term%' OR
 			middle_name LIKE '%$query_term%' OR
-			last_name LIKE '%$query_term%')";
+			last_name LIKE '%$query_term%')
+			ORDER BY paper.paper_id DESC, paperAuthorAssoc.author_index ASC";
 	
 		$this->set_paged_query($query, $page_args);
     }
@@ -719,7 +708,8 @@ class TechReports {
 				'first_name' => $row['first_name'], 
 				'middle_name' => $row['middle_name'],
 				'last_name' => $row['last_name'], 
-				'suffix' => $row['suffix']
+				'suffix' => $row['suffix'],
+				'author_index' => $row['author_index']
 			);
 			$author['full_name'] = $this->get_author_fullname($author);
 			
@@ -736,16 +726,17 @@ class TechReports {
     }
     
     private function get_all_papers_query() {
-    	return "SELECT paper.*, author.* FROM paper 
+    	return "SELECT paper.*, author.*, paperAuthorAssoc.author_index FROM paper 
     		INNER JOIN paperAuthorAssoc ON paper.paper_id=paperAuthorAssoc.paper_id 
     		INNER JOIN author ON author.author_id=paperAuthorAssoc.author_id";
     }
     
     private function get_single_paper_query($paper_id) {
-    	return "SELECT paper.*, author.* FROM paper
+    	return "SELECT paper.*, author.*, paperAuthorAssoc.author_index FROM paper
     		INNER JOIN paperAuthorAssoc ON paper.paper_id=paperAuthorAssoc.paper_id 
     		INNER JOIN author ON author.author_id=paperAuthorAssoc.author_id
-    		WHERE paper.paper_id=$paper_id";
+    		WHERE paper.paper_id=$paper_id
+    		ORDER BY paperAuthorAssoc.author_index ASC";
     }
     
     public function get_most_recent_year() {
@@ -755,11 +746,11 @@ class TechReports {
     }
     
     private function get_by_year_query($year) {
-    	return "SELECT paper.*, author.* FROM paper
+    	return "SELECT paper.*, author.*, paperAuthorAssoc.author_index FROM paper
     		INNER JOIN paperAuthorAssoc ON paper.paper_id=paperAuthorAssoc.paper_id 
     		INNER JOIN author ON author.author_id=paperAuthorAssoc.author_id
     		WHERE paper.publication_year=$year
-    		ORDER BY paper.paper_id DESC";
+    		ORDER BY paper.paper_id DESC, paperAuthorAssoc.author_index ASC";
     }
     
     public function get_all_queried_papers() {
