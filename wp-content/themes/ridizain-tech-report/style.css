@@ -179,6 +179,13 @@ body, .site, .site-footer, .site-header, .site-content .entry-content, .site-con
 .paper_display.paper_expand .paper_title {
 	cursor: pointer;
 }
+
+.paper_display .paper_edit_btn {
+	float: right;
+	background-color: #990000;
+	color: #FFCC00;
+}
+
 .paper_display .paper_body {
 	padding: 10px;
 	background-color: #CCCCCC;

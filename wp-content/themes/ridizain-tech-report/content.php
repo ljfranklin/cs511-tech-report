@@ -54,6 +54,13 @@
 			<span class="expand_icon genericon genericon-expand"></span>
 			<span class="collapse_icon genericon genericon-collapse"></span>
 			<?php endif; ?>
+			
+			<?php if ($tech_report->is_single() && is_user_logged_in()) : ?>
+				<?php $edit_url = admin_url('admin.php?page=upload-paper&action=edit&paper_id=' . $tech_report->the_ID()); ?>
+				<a href="<?php echo $edit_url; ?>" class="paper_edit_btn">
+					<span class="genericon genericon-edit"></span>
+				</a>
+			<?php endif; ?>	
 		</div>
 		
 		<?php if ($tech_report->is_single()) : ?>
@@ -109,14 +116,13 @@
 				</tbody>
 			</table>
 			
-			<?php if ($tech_report->is_single()) : ?>
 			<div class="paper_citation">
 				<label>Citation:</label>
 	            <p>
 	            	<?php echo $tech_report->get_paper_field('citation'); ?>
 	            </p>	
             </div>
-			<?php endif; ?>
+			
 			<div class="paper_abstract">
 				<label>Abstract:</label>
 				<p>
