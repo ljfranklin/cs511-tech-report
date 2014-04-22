@@ -58,20 +58,18 @@
 	color: #990000;
 }
 
-.search-toggle, .search-toggle.active, .search-toggle:hover {
+.search-btn, .search-btn.active, .search-btn:hover {
 	background-color: #990000;
 	width: 38px;
 	height: 38px;
+	font-size: 25px;
+	text-align: center;
+	float: right;
+	cursor: pointer;
 }
-.search-toggle:before {
+.search-btn:before {
 	color: #FFCC00;
-	margin-top: 9px;
-}
-.search-box-wrapper {
-	top: 38px;
-}
-.search-box {
-	background-color: #990000;
+	line-height: 38px;
 }
 
 a, a:hover {
@@ -86,6 +84,18 @@ a, a:hover {
 .header-main {
 	background-color: #CCCCCC;
 	border-bottom: 1px solid #777777;
+}
+.header-main .header-top, .header-main .header-bottom {
+	width: 100%;
+	overflow: hidden;
+}
+.header-main .site-description {
+	float: left;
+}
+.header-main .search-form {
+	float: right;
+	width: 100%;
+	max-width: 420px;
 }
 
 body, .site, .site-footer, .site-header, .site-content .entry-content, .site-content .entry-summary, .page-content, .site-content .entry-header {
