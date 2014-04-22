@@ -95,12 +95,12 @@ body, .site, .site-footer, .site-header, .site-content .entry-content, .site-con
 ::-moz-selection { background: #990000; }
 ::selection      { background: #990000; } 
 
-.author_pagination_links {
+.pagination_links {
 	width: 100%;
 	display: table;
 	table-layout: fixed;
 }
-.author_pagination_links a, .author_pagination_links span {
+.pagination_links a, .pagination_links span {
 	display: table-cell;
 	text-align: center;
 }

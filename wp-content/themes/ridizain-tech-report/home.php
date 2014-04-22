@@ -7,7 +7,7 @@ get_header(); ?>
     	
     	$paper_id = isset($_GET['paper']) ? $_GET['paper'] : NULL;
     	if ($paper_id === NULL) {
-			$tech_report->query_recent_papers();
+			$tech_report->query_recent_papers(20);
 		} else {
 			$tech_report->query_papers($paper_id);
 		}

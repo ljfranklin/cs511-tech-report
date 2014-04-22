@@ -10,7 +10,7 @@
 
 		<div id="content" class="site-content" role="main">
         
-        <div class="author_pagination_links">
+        <div class="author_pagination_links pagination_links">
     		<?php foreach (range('A', 'Z') as $letter) : ?>
     			<?php if (in_array($letter, $initials)) : ?>
 				<a href="#initial-<?php echo $letter; ?>">

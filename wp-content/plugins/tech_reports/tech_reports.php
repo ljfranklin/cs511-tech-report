@@ -647,8 +647,8 @@ class TechReports {
     	$this->queried_authors = array_values($author_to_papers);
     }
     
-    public function query_recent_papers() {
-    	$query = $this->get_all_papers_query() . ' ORDER BY paper_id DESC LIMIT 20';
+    public function query_recent_papers($limit) {
+    	$query = $this->get_all_papers_query() . " ORDER BY paper_id DESC LIMIT $limit";
 		$this->is_single = false;
     
     	$this->queried_papers = $this->get_papers_from_query($query);
@@ -665,6 +665,22 @@ class TechReports {
     	}
     
     	$this->queried_papers = $this->get_papers_from_query($query);
+    }
+    
+    public function query_papers_by_year($year = NULL) {
+    	if ($year === NULL) {
+    		$year = $this->get_most_recent_year();
+    	}
+    	
+    	$query = $this->get_by_year_query($year);
+    	
+    	$this->queried_papers = $this->get_papers_from_query($query);
+    }
+    
+    public function get_all_paper_years() {
+    	return $this->paper_db->get_col(
+    		"SELECT DISTINCT publication_year FROM paper ORDER BY publication_year DESC"
+    	);
     }
     
     private function get_papers_from_query($query) {
@@ -717,6 +733,20 @@ class TechReports {
     		INNER JOIN paperAuthorAssoc ON paper.paper_id=paperAuthorAssoc.paper_id 
     		INNER JOIN author ON author.author_id=paperAuthorAssoc.author_id
     		WHERE paper.paper_id=$paper_id";
+    }
+    
+    public function get_most_recent_year() {
+    	return $this->paper_db->get_var(
+    		"SELECT publication_year FROM paper ORDER BY publication_year DESC LIMIT 1"
+    	);
+    }
+    
+    private function get_by_year_query($year) {
+    	return "SELECT paper.*, author.* FROM paper
+    		INNER JOIN paperAuthorAssoc ON paper.paper_id=paperAuthorAssoc.paper_id 
+    		INNER JOIN author ON author.author_id=paperAuthorAssoc.author_id
+    		WHERE paper.publication_year=$year
+    		ORDER BY paper.paper_id DESC";
     }
     
     public function have_papers() {
