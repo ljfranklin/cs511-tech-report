@@ -100,9 +100,12 @@ body, .site, .site-footer, .site-header, .site-content .entry-content, .site-con
 	display: table;
 	table-layout: fixed;
 }
-.pagination_links a, .pagination_links span {
+.pagination_links > a, .pagination_links > span {
 	display: table-cell;
 	text-align: center;
+}
+.pagination_links > a.current_page, .pagination_links > span.current_page {
+	text-decoration: underline;
 }
 
 .entry-content th {

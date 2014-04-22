@@ -12,6 +12,7 @@
         
         <div class="author_pagination_links pagination_links">
     		<?php foreach (range('A', 'Z') as $letter) : ?>
+    			<span>
     			<?php if (in_array($letter, $initials)) : ?>
 				<a href="#initial-<?php echo $letter; ?>">
 					<?php echo $letter; ?>
@@ -21,6 +22,7 @@
 					<?php echo $letter; ?>
 				</span>
 				<?php endif; ?>
+				</span>
 			<?php endforeach; ?>
         </div>
         

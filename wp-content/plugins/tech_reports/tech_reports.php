@@ -14,6 +14,7 @@ class TechReports {
 	private $current_paper = NULL;
 	private $current_author = NULL;
 	private $is_single = false;
+	private $total_page_count = 0;
 
 	function __construct($paper_id=NULL) {
 		$this->paper_db = new wpdb("wordpress", "wp1234", "tech_papers", "localhost");
@@ -643,29 +644,29 @@ class TechReports {
     	$this->queried_papers = $this->get_papers_from_query($query);
     }
     
-    public function query_papers_by_search($query_term) {
+    public function query_papers_by_search($query_term, $page_args) {
     
     	$query = "SELECT paper.*, author.* FROM paper 
     		INNER JOIN paperAuthorAssoc ON paper.paper_id=paperAuthorAssoc.paper_id 
     		INNER JOIN author ON author.author_id=paperAuthorAssoc.author_id
-    		WHERE (title LIKE '%$query_term%' OR abstract LIKE '%$query_term%' OR published_at LIKE '%$query_term%' OR keywords LIKE '%$query_term%') OR
-    		(first_name LIKE '%$query_term%' OR
+    		WHERE (title LIKE '%$query_term%' OR abstract LIKE '%$query_term%' OR published_at LIKE '%$query_term%' OR keywords LIKE '%$query_term%' OR
+    		first_name LIKE '%$query_term%' OR
 			middle_name LIKE '%$query_term%' OR
 			last_name LIKE '%$query_term%')";
-    
-    /*
-    	$query = "SELECT paper.*, author.* FROM paper 
-			WHERE title LIKE '%$query_term%' OR abstract LIKE '%$query_term%' OR published_at LIKE '%$query_term%' OR keywords LIKE '%$query_term%'
-			UNION
-			SELECT paper_id FROM paperAuthorAssoc
-			INNER JOIN author ON 
-			(
-				author.first_name LIKE '%$query_term%' OR
-				author.middle_name LIKE '%$query_term%' OR
-				author.last_name LIKE '%$query_term%'
-			) AND
-			paperAuthorAssoc.author_id=author.author_id";
-	*/
+	
+		$count_query = "SELECT DISTINCT paper.paper_id FROM ($query) as paper";
+		$paper_ids = $this->paper_db->get_col($count_query);
+		
+		if (count($paper_ids) === 0) {
+			$this->queried_papers = array();
+			return;
+		}
+		
+		$this->total_page_count = ceil(count($paper_ids) / $page_args['per_page']);
+		$paged_ids = array_slice($paper_ids, ($page_args['current_page'] - 1)*$page_args['per_page'], $page_args['per_page']); 
+		
+		$query .= " AND paper.paper_id IN (" . implode(', ', $paged_ids) . ")";
+		
 		$this->queried_papers = $this->get_papers_from_query($query);
 		
 		$this->is_single = false;
@@ -797,6 +798,10 @@ class TechReports {
     		}
     	}
     	return $initials;
+    }
+    
+    public function get_total_pages() {
+    	return $this->total_page_count;
     }
 }
 

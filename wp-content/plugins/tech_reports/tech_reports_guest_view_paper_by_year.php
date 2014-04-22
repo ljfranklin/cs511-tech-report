@@ -15,9 +15,11 @@
         
         <div class="year_pagination_links pagination_links">
     		<?php foreach ($years as $this_year) : ?>
-    			<a href="<?php echo get_permalink() . '&year=' . $this_year; ?>">
-					<?php echo '\'' . substr(strval($this_year), 2, 2); ?>
-				</a>
+    			<span>
+					<a href="<?php echo get_permalink() . '&year=' . $this_year; ?>">
+						<?php echo '\'' . substr(strval($this_year), 2, 2); ?>
+					</a>
+				</span>
 			<?php endforeach; ?>
         </div>
         
