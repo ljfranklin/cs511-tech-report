@@ -29,7 +29,9 @@ class Paper_List_Table extends WP_List_Table {
 		return array(
 			'cb' => '<input type="checkbox" />',
 			'title'=>'Title',
+			'authors' => 'Authors',
 			'type' => 'Type',
+			'published_at' => 'Journal/Conference',
 			'publication_year' => 'Year'
 		);
 	}
@@ -65,11 +67,18 @@ class Paper_List_Table extends WP_List_Table {
 	}
 	
 	function column_default( $item, $column_name ) {
+		error_log($column_name);
   		switch( $column_name ) { 
     		case 'paper_id':
     		case 'type':
+    		case 'published_at':
     		case 'publication_year':
     			return $item[$column_name];
+    		case 'authors':
+				$to_full_names = function($author) {
+					return $author['full_name'];
+				};
+    			return implode(', ', array_map($to_full_names, $item[$column_name]));
     		default:
     	 		return print_r( $item, true ); 
   		}
