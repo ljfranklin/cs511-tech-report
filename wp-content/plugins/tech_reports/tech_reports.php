@@ -15,6 +15,7 @@ class TechReports {
 	private $current_author = NULL;
 	private $is_single = false;
 	private $total_page_count = 0;
+	private $total_results = 0;
 
 	function __construct($paper_id=NULL) {
 		$this->paper_db = new wpdb("wordpress", "wp1234", "tech_papers", "localhost");
@@ -631,7 +632,9 @@ class TechReports {
     	$count_query = "SELECT DISTINCT paper.paper_id FROM ($query) as paper";
 		$paper_ids = $this->paper_db->get_col($count_query);
 		
-		if (count($paper_ids) === 0) {
+		$this->total_results = count($paper_ids);
+		
+		if ($this->total_results === 0) {
 			$this->queried_papers = array();
 			return;
 		}
@@ -640,7 +643,7 @@ class TechReports {
 		
 		$query = "SELECT * FROM ($query) as paper WHERE paper.paper_id IN (" . implode(', ', $paged_ids) . ")";
 		
-		$this->total_page_count = ceil(count($paper_ids) / $page_args['per_page']);
+		$this->total_page_count = ceil($this->total_results / $page_args['per_page']);
 		$this->queried_papers = $this->get_papers_from_query($query);
 		$this->is_single = false;
     }
@@ -753,6 +756,10 @@ class TechReports {
     		ORDER BY paper.paper_id DESC";
     }
     
+    public function get_all_queried_papers() {
+    	return $this->queried_papers;
+    }
+    
     public function have_papers() {
     	return ($this->queried_papers !== NULL && count($this->queried_papers) > 0);
     }
@@ -815,6 +822,10 @@ class TechReports {
     
     public function get_total_pages() {
     	return $this->total_page_count;
+    }
+    
+    public function get_total_results() {
+    	return $this->total_results;
     }
 }
 
