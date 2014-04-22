@@ -10,6 +10,7 @@
  * @since Ridizain 1.0
  */
 ?>
+
 <?php tha_entry_before(); ?>
 <article id="post-<?php echo $tech_report->the_ID(); ?>" <?php post_class(); ?>>
 <?php tha_entry_top(); ?>
@@ -102,7 +103,13 @@
 					<?php endif; ?>
 					<tr>
 						<th>Download:</th>
-						<td><a href="<?php echo $tech_report->get_paper_field('file'); ?>" target="_blank">PDF</a></td>
+						<?php $download_url = $tech_report->get_paper_download_url($tech_report->the_ID()); ?>
+						<td>
+							<a href="<?php echo $download_url; ?>" target="_blank">PDF</a>
+							<span>
+								(<?php echo $tech_report->get_paper_field('download_count'); ?> downloads)
+							</span>
+						</td>
 					</tr>
 					<tr>
 						<th>Keywords:</th>

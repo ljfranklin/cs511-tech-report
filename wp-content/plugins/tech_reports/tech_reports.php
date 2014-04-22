@@ -22,14 +22,30 @@ class TechReports {
 	
 		$this->paper_db = new wpdb(DB_USER, DB_PASSWORD, PAPER_DB_NAME, DB_HOST);
 		$this->post_db = $wpdb;
+		
+		add_action('init', array($this,'process_download_link'));
 	}
 	
+	public function process_download_link() {
+		if(isset($_GET['download_paper'])) {
+			$paper_id = $_GET['download_paper'];
+			
+			$this->increment_download_counter($paper_id);
+
+			$url = $this->get_paper_url($paper_id);
+	
+			wp_redirect($url);	
+			exit;
+		}
+	}
+
 	public static function plugin_setup() {
 		self::create_plugin_table();
 		self::create_upload_directory();
 		self::activate_theme();
 		self::add_by_authors_page();
 		self::add_by_year_page();
+		self::add_download_counter_page();
 		self::update_blog_description();
 		
 		add_action('update_option_active_plugins', array('TechReports','activate_extra_plugins'));
@@ -154,6 +170,7 @@ class TechReports {
 	public static function tech_reports_admin_list() {
 		include('tech_reports_admin_list.php');	
 	}
+	
 
 	public static function tech_reports_admin_actions() {
  		add_menu_page("Research Papers", "Research Papers", "edit_posts", "list-papers", array("TechReports", "tech_reports_admin_list"), '', 0);
@@ -198,10 +215,14 @@ class TechReports {
     	return $filename;
     }
     
-    private function get_paper_url($paper) {
-	 	$pdf_path = $this->get_paper_filename($paper['paper_id'], $paper['publication_year']);
+    public function get_paper_url($paper_id, $publication_year=NULL) {
+	 	$pdf_path = $this->get_paper_filename($paper_id, $publication_year);
 		$base_path = ABSPATH;
 		return "../" . substr($pdf_path, strlen($base_path));
+	}
+	
+	public function get_paper_download_url($paper_id) {
+		return site_url() . "/?download_paper=$paper_id";
 	}
 	
 	public function delete_paper($paper_id) {
@@ -481,6 +502,10 @@ class TechReports {
 		return $paper_id;
     }
     
+    public function increment_download_counter($paper_id) {
+    	$this->paper_db->query("UPDATE paper SET download_count=download_count+1 WHERE paper_id=$paper_id");
+    }
+    
     public function get_all_authors() {
     	$query = "SELECT author_id, first_name, middle_name, last_name, suffix FROM author ORDER BY first_name ASC";
     	$results = $this->paper_db->get_results($query, ARRAY_A);
@@ -617,6 +642,7 @@ class TechReports {
 			 	  	'published_at' => $row['published_at'], 
 			 	  	'keywords' => $row['keywords'], 
 			 	  	'type' => $row['type'],
+			 	  	'download_count' => $row['download_count'],
 			 	  	'authors' => array()
 		 	  	);
 			}
@@ -637,7 +663,7 @@ class TechReports {
 		foreach ($results_array as $index => $paper) {
 			$results_array[$index]['citation'] = $this->generate_citation($paper);
 			$results_array[$index]['identifier'] = $this->get_paper_identifier($paper['paper_id'], $paper['publication_year']);
-			$results_array[$index]['file'] = $this->get_paper_url($paper);
+			$results_array[$index]['file'] = $this->get_paper_url($paper['paper_id'], $paper['publication_year']);
 		}
 		
 		return array_values($results_array);
@@ -751,5 +777,7 @@ add_action('admin_menu', array('TechReports','tech_reports_admin_actions'));
 add_shortcode( 'List_Paper_By_Author_Name', array('TechReports', 'tech_reports_guest_view_paper_by_author_name') );
 
 add_shortcode( 'List_Paper_By_Year', array('TechReports', 'tech_reports_guest_view_paper_by_year') );
+
+$tech_report = new TechReports();
 
 ?>
