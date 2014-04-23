@@ -117,10 +117,18 @@ class PaperRepo {
 		);
 		$paper_id = $this->paper_db->insert_id;
 		
-		$authors = $values['existing_authors'];
+		$this->add_authors($paper_id, $values['new_authors'], $values['existing_authors']);
+		
+		$this->process_file_upload($paper_id, trim($values['publication_year']), $values['file']);
+		
+		return $paper_id;
+    }
+    
+    private function add_authors($paper_id, $new_authors, $existing_authors) {
+    	$authors = $existing_authors;
 		
 		//Insert new authors
-		foreach ($values['new_authors'] as $new_author) {
+		foreach ($new_authors as $new_author) {
 			$this->paper_db->insert(
 				'author',
 				array(
@@ -157,10 +165,6 @@ class PaperRepo {
 				)
 			);
 		}
-		
-		$this->process_file_upload($paper_id, trim($values['publication_year']), $values['file']);
-		
-		return $paper_id;
     }
     
     private function process_file_upload($paper_id, $year, $file) {
@@ -223,30 +227,6 @@ class PaperRepo {
 			)
 		);
 		
-		$authors = $new_values['existing_authors'];
-		
-		//Insert new authors
-		foreach ($new_values['new_authors'] as $new_author) {
-			$this->paper_db->insert(
-				'author',
-				array(
-					'first_name' => trim($new_author['first_name']),
-					'middle_name' => trim($new_author['middle_name']),
-					'last_name' => trim($new_author['last_name']),
-					'suffix' => trim($new_author['suffix'])
-				),
-				array(
-					'%s',
-					'%s',
-					'%s',
-					'%s'
-				)
-			);
-			$new_author_id = $this->paper_db->insert_id;
-			$new_author['author_id'] = $new_author_id;
-			array_push($authors, $new_author);
-		}
-		
 		//remove existing associations
 		$this->paper_db->delete(
 			'paperAuthorAssoc',
@@ -258,22 +238,7 @@ class PaperRepo {
 			)
 		);
 		
-		//Add association between papers and authors
-		foreach ($authors as $author) {
-			$this->paper_db->insert(
-				'paperAuthorAssoc',
-				array(
-					'paper_id' => $paper_id,
-					'author_id' => $author['author_id'],
-					'author_index' => $author['author_index']
-				),
-				array(
-					'%d',
-					'%d',
-					'%d'
-				)
-			);
-		}
+		$this->add_authors($paper_id, $new_values['new_authors'], $new_values['existing_authors']);
 		
 		//delete authors not tied to paper
 		$this->paper_db->query("DELETE FROM author WHERE author_id NOT IN (SELECT author_id FROM paperAuthorAssoc)");
