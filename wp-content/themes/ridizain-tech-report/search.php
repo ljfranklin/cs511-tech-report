@@ -1,10 +1,11 @@
 
 <?php
 
+global $tech_report;
+
 get_header(); ?>
 	
 	<?php 
-    	$tech_report = new TechReports(); 
     	
     	$current_page = isset($_GET['pagination']) ? intval($_GET['pagination']) : 1;
     	

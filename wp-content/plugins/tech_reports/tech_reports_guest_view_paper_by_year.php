@@ -1,12 +1,11 @@
 <?php
+	global $tech_report;
 	
-	$tech_report = new TechReports();
-	
-	$year = isset($_GET['year']) ? $_GET['year'] : $tech_report->get_most_recent_year();
+	$year = isset($_GET['year']) ? $_GET['year'] : NULL;
 	
 	$tech_report->query_papers_by_year($year);
 	
-	$years = $tech_report->get_all_paper_years();
+	$years = $tech_report->get_paper_repo()->get_all_paper_years();
 ?>
 	
 	<div id="primary" class="content-area">

@@ -1,18 +1,21 @@
 <?php
 
+global $tech_report;
+
+$paper_repo = $tech_report->get_paper_repo();
+
 if(!class_exists('WP_List_Table_Copy')){
 	require_once( plugin_dir_path( __FILE__ ) . 'includes/class-wp-list-table-copy.php' );
 }
 
-$tech_report = new TechReports();
 if (isset($_GET['action']) && $_GET['action'] == 'delete') {
 	$paper_id = $_GET['paper_id'];
-	$tech_report->delete_paper($paper_id);
+	$paper_repo->delete_paper($paper_id);
 }
 
 if ((isset($_POST['action']) && $_POST['action'] == 'delete') || (isset($_POST['action2']) && $_POST['action2'] == 'delete')) {
 	$paper_ids = $_POST['paper_id'];
-	$tech_report->delete_multiple_papers($paper_ids);
+	$paper_repo->delete_multiple_papers($paper_ids);
 }
 
 class Paper_List_Table extends WP_List_Table {
@@ -43,6 +46,8 @@ class Paper_List_Table extends WP_List_Table {
 	}
 	
 	function prepare_items() {
+		global $tech_report;
+	
 		$columns = $this->get_columns();
 		$hidden = $this->get_hidden_columns();
   		$sortable = array();
@@ -53,8 +58,6 @@ class Paper_List_Table extends WP_List_Table {
 			'current_page' => $current_page,
     		'per_page' => 20
     	);
-    	
-    	$tech_report = new TechReports();
     	
     	$tech_report->query_recent_papers($page_args);
     	

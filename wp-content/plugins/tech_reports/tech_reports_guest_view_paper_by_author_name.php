@@ -1,8 +1,7 @@
 <?php
+	global $tech_report;
 	
-	$tech_report = new TechReports();
-	
-	$initials = $tech_report->get_author_initials();
+	$initials = $tech_report->get_paper_repo()->get_author_initials();
 	
 	if (isset($_GET['letter'])) {
 		$first_letter = $_GET['letter'];
@@ -13,8 +12,6 @@
 	}
 	
 	$tech_report->query_papers_by_author($first_letter);
-	
-	
 ?>
 	
 	<div id="primary" class="content-area">

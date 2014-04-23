@@ -1,9 +1,9 @@
 <?php
+global $tech_report;
 
 get_header(); ?>
 	
 	<?php 
-    	$tech_report = new TechReports(); 
     	
     	$paper_id = isset($_GET['paper']) ? $_GET['paper'] : NULL;
     	$current_page = isset($_GET['pagination']) ? intval($_GET['pagination']) : 1;
@@ -15,7 +15,7 @@ get_header(); ?>
 			);
 			$tech_report->query_recent_papers($page_args);
 		} else {
-			$tech_report->query_papers($paper_id);
+			$tech_report->query_single_paper($paper_id);
 		}
     ?>
 	

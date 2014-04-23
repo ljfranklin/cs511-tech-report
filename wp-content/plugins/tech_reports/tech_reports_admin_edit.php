@@ -1,10 +1,12 @@
 <?php
 
-	$tech_report = new TechReports();
+	global $tech_report;
+	
+	$paper_repo = $tech_report->get_paper_repo();
    	
     if(isset($_POST['action']) && $_POST['action'] == 'create') {
     	$values = get_values();
-    	$paper_id = $tech_report->add_new_paper($values);
+    	$paper_id = $paper_repo->add_new_paper($values);
 	
 		wp_redirect(get_site_url()."/?paper=$paper_id");
 		exit;
@@ -12,14 +14,14 @@
     if(isset($_POST['action']) && $_POST['action'] == 'edit') {
     	$values = get_values();
     	$values['paper_id'] = $_POST['paper_id'];
-    	$paper_id = $tech_report->update_paper($values, $_POST['previous_year']);
+    	$paper_id = $paper_repo->update_paper($values, $_POST['previous_year']);
 		
 		wp_redirect(get_site_url()."/?paper=$paper_id");
 		exit;
     }
     
 	if (isset($_GET['paper_id']) && (isset($_GET['action']) && $_GET['action'] == 'edit')) {
-		$tech_report->query_papers($_GET['paper_id']);
+		$tech_report->query_single_paper($_GET['paper_id']);
 		$tech_report->the_paper();
 		$is_editing = true;
 	} else {
@@ -63,8 +65,8 @@
     	return $tech_report->get_paper_field($name);
     };
     
-    $get_authors = function() use ($tech_report) {
-    	$authors = $tech_report->get_all_authors();
+    $get_authors = function() use ($paper_repo) {
+    	$authors = $paper_repo->get_all_authors();
     	return json_encode($authors);
     };
     
@@ -262,7 +264,7 @@ function updateJournalConferenceDisplay() {
 					</th>
 					<td>
 						<?php if ($is_editing) { ?>
-							<a href="<?php echo $get_existing_value('file') ?>" target="_blank">Existing PDF</a><br/>
+							<a href="<?php echo $get_existing_value('url') ?>" target="_blank">Existing PDF</a><br/>
 							Replace File:
 						<?php } ?>
 						<input type="file" name="paper_upload" id="paper_upload" accept="application/pdf" <?php if ($is_editing == false) echo "required" ?>/>

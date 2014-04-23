@@ -103,9 +103,8 @@
 					<?php endif; ?>
 					<tr>
 						<th>Download:</th>
-						<?php $download_url = $tech_report->get_paper_download_url($tech_report->the_ID()); ?>
 						<td>
-							<a href="<?php echo $download_url; ?>" target="_blank">PDF</a>
+							<a href="<?php echo $tech_report->get_download_link(); ?>" target="_blank">PDF</a>
 							<span>
 								(<?php echo $tech_report->get_paper_field('download_count'); ?> downloads)
 							</span>
