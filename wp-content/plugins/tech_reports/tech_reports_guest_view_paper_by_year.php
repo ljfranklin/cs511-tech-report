@@ -1,11 +1,17 @@
 <?php
 	global $tech_report;
 	
-	$year = isset($_GET['year']) ? $_GET['year'] : NULL;
+	$years = $tech_report->get_paper_repo()->get_all_paper_years();
+	
+	if (isset($_GET['year'])) {
+		$year =  $_GET['year'];
+	} else if (count($years) > 0) {
+		$year = $years[0];
+	} else {
+		$year = NULL;
+	} 
 	
 	$tech_report->query_papers_by_year($year);
-	
-	$years = $tech_report->get_paper_repo()->get_all_paper_years();
 ?>
 	
 	<div id="primary" class="content-area">
