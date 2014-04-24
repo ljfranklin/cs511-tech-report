@@ -1,63 +1,66 @@
 <?php
-
-
-$wp_roles = new WP_Roles();
-$wp_roles->remove_role("editor");
-$wp_roles->remove_role("author");
-$wp_roles->remove_role("subscriber");
-/**
- * The main template file
- *
- * This is the most generic template file in a WordPress theme and one
- * of the two required files for a theme (the other being style.css).
- * It is used to display a page when nothing more specific matches a query,
- * e.g., it puts together the home page when no home.php file exists.
- *
- * @link http://codex.wordpress.org/Template_Hierarchy
- *
- *
- * @package Ridizain
- * @since Ridizain 1.0
- */
+global $tech_report;
 
 get_header(); ?>
-
+	
+	<?php 
+    	
+    	$paper_id = isset($_GET['paper']) ? $_GET['paper'] : NULL;
+    	$current_page = isset($_GET['pagination']) ? intval($_GET['pagination']) : 1;
+    	
+    	if ($paper_id === NULL) {
+    		$page_args = array(
+				'current_page' => $current_page,
+				'per_page' => 20
+			);
+			$tech_report->query_recent_papers($page_args);
+		} else {
+			$tech_report->query_single_paper($paper_id);
+		}
+    ?>
+	
 	<div id="primary" class="content-area">
 
 		<div id="content" class="site-content" role="main">
 		
-		<header class="entry-header">
+		<?php if ($tech_report->is_single() === false) : ?> 
+		<header>
 			<h1 class="entry-title">Recent Papers</h1>
 		</header>
+		<?php else : ?>
+		<header>
+			<h1 class="entry-title">Paper Details</h1>
+		</header>
+		<?php endif; ?>
         
 		<?php
-			if ( have_posts() ) :
+			if ( $tech_report->have_papers() ) : ?>
+			
+				<div class="pagination_links">
+					<?php for ($i = 1; $i <= $tech_report->get_total_pages(); $i++) : ?>
+						<span class="<?php if ($current_page === $i) echo 'current_page'; ?>">
+							<a href="<?php echo site_url() . '/?pagination=' . $i ?>">
+								<?php echo $i; ?>
+							</a>
+						</span>
+					<?php endfor; ?>
+				</div>
+					
+				<?php
 				// Start the Loop.
-				while ( have_posts() ) : the_post();
-
-					/*
-					 * Include the post format-specific template for the content. If you want to
-					 * use this in a child theme, then include a file called called content-___.php
-					 * (where ___ is the post format) and that will be used instead.
-					 */
-					get_template_part( 'content', get_post_format() );
-
+				while ( $tech_report->have_papers() ) : $tech_report->the_paper();
+					include('content.php');
 				endwhile;
-				// Previous/next post navigation.
-				ridizain_paging_nav();
 
 			else :
 				// If no content, include the "No posts found" template.
 				get_template_part( 'content', 'none' );
-
 			endif;
 		?>
 
 		</div><!-- #content -->
 	</div><!-- #primary -->
-	<?php get_sidebar( 'content' ); ?>
 </div><!-- #main-content -->
 
 <?php
-get_sidebar();
 get_footer();

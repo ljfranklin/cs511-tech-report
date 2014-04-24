@@ -72,4 +72,16 @@ Description: Remove menu items from dashboard.
 	function wpse_remove_edit_post_link( $link ) {
 		return '';
 	}
+	
+	
+	register_activation_hook( __FILE__, 'activate_delete_plugin');
+	function activate_delete_plugin() {
+		remove_role("editor");
+		remove_role("author");
+		remove_role("subscriber");
+	
+		//delete sample posts
+		wp_delete_post(1, true);
+		wp_delete_post(2, true);
+	}
 ?>

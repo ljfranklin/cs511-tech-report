@@ -42,11 +42,13 @@ var AuthorsTypeahead = function(opts) {
 	};
 
 	function addInputsForExistingAuthors() {
-		_.chain(allAuthors)
-			.filter(function(author) {
-				return _.findWhere(paperAuthors, {author_id: author.author_id});
+		_.each(paperAuthors, addAuthor);
+		/*
+		_.chain(paperAuthors)
+			.map(function(author) {
+				return _.findWhere(allAuthors, {author_id: author.author_id});
 			})
-			.each(addAuthor);
+			.each(addAuthor);*/
 	}
 
 	function substringMatcher(authors) {
@@ -84,15 +86,21 @@ var AuthorsTypeahead = function(opts) {
 		var existingAuthorTemplate = _.template(existingAuthorHtml);
 		var newAuthorTemplate = _.template(newAuthorHtml);
 		
+		var authorIndex = $authorList.find('.author-inputs').size();
+		
 		var elementContent;
 		if (author.isNewAuthor) {
 			var rawName = author.rawName.trim();
 			var authorData = splitFullNameIntoFirstMiddleLast(rawName);
 			authorData.newAuthorIndex = $authorList.find('.new-author').size();
+			authorData.authorIndex = authorIndex;
 	
 			elementContent = newAuthorTemplate(authorData);
 		} else {
-			elementContent = existingAuthorTemplate(author);
+			var authorData = author;
+			authorData.existingAuthorIndex = $authorList.find('.existing-author').size();
+			authorData.authorIndex = authorIndex;
+			elementContent = existingAuthorTemplate(authorData);
 		}
 	
 		var $authorElement = $(elementContent);
@@ -153,16 +161,32 @@ var AuthorsTypeahead = function(opts) {
 		} 
 	
 		//update new author indexes
-		if (isNewAuthor) {
-			$authorList.find('.new-author').each(function(authorIndex, authorDiv) {
-				var $author = $(authorDiv);
-				$author.find('input').each(function(i, input) {
-					var $input = $(input);
-					var originalName = $input.attr('name');
-					var newName = originalName.replace(/\[\d+\]/, '\[' + authorIndex + '\]');
-					$input.attr('name', newName);
-				});
+		var updateAuthorIndex = function(authorIndex, authorDiv) {
+			var $author = $(authorDiv);
+			$author.find('input:not(:disabled)').each(function(i, input) {
+				var $input = $(input);
+				var originalName = $input.attr('name');
+				var newName = originalName.replace(/\[\d+\]/, '\[' + authorIndex + '\]');
+				$input.attr('name', newName);
 			});
+		};
+		
+		if (isNewAuthor) {
+			$authorList.find('.new-author').each(updateAuthorIndex);
+		} else {
+			$authorList.find('.existing-author').each(updateAuthorIndex);
 		}
+		
+		$authorList.find('.author-inputs').each(function(authorIndex, authorDiv) {
+			var $author = $(authorDiv);
+			$author.find('input')
+				.filter(function() { 
+					return (/\[\d+\]\[author\_index\]/).test($(this).attr('name'));
+				})
+				.each(function(i, input) {
+					var $input = $(input);
+					$input.val(authorIndex);
+				});
+		});
 	}
 };

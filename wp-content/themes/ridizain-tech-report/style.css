@@ -31,10 +31,9 @@
 	max-width: 750px;
 }
 
-.list-view .site-content .hentry {
+.hentry, .list-view .site-content .hentry {
 	border-style: none;
 	margin: 0;
-	margin-top: 30px;
 	padding: 0;
 }
 
@@ -59,20 +58,18 @@
 	color: #990000;
 }
 
-.search-toggle, .search-toggle.active, .search-toggle:hover {
+.search-btn, .search-btn.active, .search-btn:hover {
 	background-color: #990000;
 	width: 38px;
 	height: 38px;
+	font-size: 25px;
+	text-align: center;
+	float: right;
+	cursor: pointer;
 }
-.search-toggle:before {
+.search-btn:before {
 	color: #FFCC00;
-	margin-top: 9px;
-}
-.search-box-wrapper {
-	top: 38px;
-}
-.search-box {
-	background-color: #990000;
+	line-height: 38px;
 }
 
 a, a:hover {
@@ -88,6 +85,18 @@ a, a:hover {
 	background-color: #CCCCCC;
 	border-bottom: 1px solid #777777;
 }
+.header-main .header-top, .header-main .header-bottom {
+	width: 100%;
+	overflow: hidden;
+}
+.header-main .site-description {
+	float: left;
+}
+.header-main .search-form {
+	float: right;
+	width: 100%;
+	max-width: 420px;
+}
 
 body, .site, .site-footer, .site-header, .site-content .entry-content, .site-content .entry-summary, .page-content, .site-content .entry-header {
 	background-color: #EFEFEF;
@@ -95,6 +104,29 @@ body, .site, .site-footer, .site-header, .site-content .entry-content, .site-con
 
 ::-moz-selection { background: #990000; }
 ::selection      { background: #990000; } 
+
+.pagination_links {
+	width: 100%;
+	display: table;
+	table-layout: fixed;
+}
+.pagination_links > span {
+	display: table-cell;
+	text-align: center;
+}
+.pagination_links > span.current_page {
+	text-decoration: underline;
+}
+.pagination_links > span > a {
+	padding: 4px;
+	color: #FFCC00;
+	background-color: #990000;
+}
+.pagination_links > span.current_page > a, .pagination_links > span > a:hover {
+	padding: 4px;
+	color: #990000;
+	background-color: #FFCC00;
+}
 
 .entry-content th {
 	font-weight: bold;
@@ -147,6 +179,13 @@ body, .site, .site-footer, .site-header, .site-content .entry-content, .site-con
 .paper_display.paper_expand .paper_title {
 	cursor: pointer;
 }
+
+.paper_display .paper_edit_btn {
+	float: right;
+	background-color: #990000;
+	color: #FFCC00;
+}
+
 .paper_display .paper_body {
 	padding: 10px;
 	background-color: #CCCCCC;
