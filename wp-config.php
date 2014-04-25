@@ -24,7 +24,7 @@ define('PAPER_DB_NAME', 'tech_papers');
 define('DB_USER', 'wordpress');
 
 /** MySQL database password */
-define('DB_PASSWORD', 'wp1234');
+define('DB_PASSWORD', 'your-password-here');
 
 /** MySQL hostname */
 define('DB_HOST', 'localhost');
