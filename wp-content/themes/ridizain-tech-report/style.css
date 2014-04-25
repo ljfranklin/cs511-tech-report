@@ -37,7 +37,7 @@
 	padding: 0;
 }
 
-.primary-navigation .page_item {
+.primary-navigation .page_item, .primary-navigation .nav-menu li {
 	margin-left: 10px;
 	height: 38px;
 	line-height: 38px;
@@ -49,11 +49,16 @@
 	display: inline-block;
 }
 
-.primary-navigation .page_item a {
+.primary-navigation .page_item a, .primary-navigation .nav-menu li a {
 	background-color: #990000;
 	color: #FFCC00;
 }
-.primary-navigation .page_item > a:hover, .primary-navigation .page_item.current_page_item > a {
+.primary-navigation .page_item > a:hover, 
+.primary-navigation .page_item.current_page_item > a,
+.primary-navigation li > a:hover, 
+.primary-navigation li.current_page_item > a,
+.primary-navigation .page_item.current_page_item > a:hover,
+.primary-navigation li.current_page_item > a:hover {
 	background-color: #FFCC00 !important;
 	color: #990000;
 }
