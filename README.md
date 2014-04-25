@@ -5,12 +5,12 @@ cs511-tech-report:
 Some of these instructions are specific to Ubuntu, but should be similiar in other systems.
 
 ## Install apache2
-sudo apt-get install apache2
-sudo service apache2 restart
+		sudo apt-get install apache2
+		sudo service apache2 restart
 
-sudo nano /etc/apache2/apache2.conf
-//Add the follow line: 
-ServerName localhost
+		sudo nano /etc/apache2/apache2.conf
+Add the follow line: 
+		ServerName localhost
 
 ## Install PHP5
 sudo apt-get install libapache2-mod-php5
