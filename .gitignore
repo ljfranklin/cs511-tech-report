@@ -4,3 +4,7 @@
 *.pdf
 
 *.log
+
+# Don't commit local config changes
+wp-config.php
+setup-db.sql
