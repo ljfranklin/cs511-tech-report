@@ -138,7 +138,7 @@
 			
 			<?php if ($tech_report->is_single() === false) : ?>
 			<p class="read-more button">
-				<a href="<?php echo $tech_report->get_permalink(); ?>"><?php _e( 'View Details &raquo;', 'ridizain' ); ?></a>
+				<a href="<?php echo $tech_report->get_permalink(); ?>"><?php _e( 'Link to Paper &raquo;', 'ridizain' ); ?></a>
 			</p>
 			<?php endif; ?>
 			
