@@ -20,7 +20,7 @@ class PaperRepo {
 	public function create_plugin_table() {
 		if($this->paper_db->get_var("SHOW TABLES LIKE 'paper'") !== 'paper') {
 			$sql = "CREATE TABLE if not exists paper (
-				paper_id INT NOT NULL AUTO_INCREMENT, 
+				paper_id INT NOT NULL, 
 				title TEXT NOT NULL,
 				abstract TEXT NOT NULL,
 				publication_year YEAR NOT NULL,
@@ -96,9 +96,12 @@ class PaperRepo {
     
     public function add_new_paper($values) {
        	
-        $this->paper_db->insert( 
+       	$paper_id = empty($values['paper_id']) ? $this->get_next_id() : $values['paper_id'];   
+       	
+        $success = $this->paper_db->insert( 
 			'paper', 
 			array( 
+				'paper_id' => $paper_id,
 				'title' => trim($values['title']),
 				'abstract' => trim($values['abstract']),
 				'type' => trim($values['type']),
@@ -106,7 +109,8 @@ class PaperRepo {
 				'published_at' => trim($values['published_at']),
 				'keywords' => trim($values['keywords'])
 			), 
-			array( 
+			array(
+				'%d',
 				'%s',
 				'%s',
 				'%s',
@@ -115,13 +119,23 @@ class PaperRepo {
 				'%s'
 			) 
 		);
-		$paper_id = $this->paper_db->insert_id;
+		
+		if ($success === false) {
+			return NULL;
+		}
 		
 		$this->add_authors($paper_id, $values['new_authors'], $values['existing_authors']);
 		
 		$this->process_file_upload($paper_id, trim($values['publication_year']), $values['file']);
 		
 		return $paper_id;
+    }
+    
+    private function get_next_id() {
+    	$highest_id = $this->paper_db->get_var(
+    		"SELECT IFNULL(MAX(paper_id), 0) FROM paper"
+    	);
+    	return ($highest_id + 1);
     }
     
     private function add_authors($paper_id, $new_authors, $existing_authors) {

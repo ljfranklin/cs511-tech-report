@@ -7,13 +7,19 @@
     if(isset($_POST['action']) && $_POST['action'] == 'create') {
     	$values = get_values();
     	$paper_id = $paper_repo->add_new_paper($values);
-	
-		wp_redirect(get_site_url()."/?paper=$paper_id");
-		exit;
+    	
+    	if (empty($paper_id)) {
+    		unset($_POST['action']);
+    		$error = "An error occurred. The ID you entered might already be in use.";
+    		wp_redirect(admin_url() . "/admin.php?page=upload-paper&error=" . urlencode($error));
+    		exit;
+    	} else {
+    		wp_redirect(get_site_url()."/?paper=$paper_id");
+			exit;
+    	}
     } 
     if(isset($_POST['action']) && $_POST['action'] == 'edit') {
     	$values = get_values();
-    	$values['paper_id'] = $_POST['paper_id'];
     	$paper_id = $paper_repo->update_paper($values, $_POST['previous_year']);
 		
 		wp_redirect(get_site_url()."/?paper=$paper_id");
@@ -44,6 +50,7 @@
     	}
     	
     	return array(
+    		'paper_id' => $_POST['paper_id'],
     		'title' => $_POST['paper_title'],
     		'existing_authors' => $existing_authors,
     		'new_authors' => $new_authors,
@@ -177,10 +184,14 @@ function updateJournalConferenceDisplay() {
 
 <div class="wrap">
 	<h2>Upload a Research Paper</h2>
+	<?php if (isset($_GET['error'])) : ?>
+	<h3 class="error-message">
+		<?php echo urldecode($_GET['error']); ?>
+	</h3>
+	<?php endif; ?>
 	<form id="paper-upload-form" method="post" action="<?php echo $_SERVER['REQUEST_URI'] ?>&noheader=true" enctype="multipart/form-data">
 		<input type="hidden" name="action" value="<?php echo $is_editing ? 'edit' : 'create' ?>"/>
 		<?php if ($is_editing) { ?>
-			<input type="hidden" name="paper_id" value="<?php echo $get_existing_value('paper_id') ?>"/>
 			<input type="hidden" name="previous_year" value="<?php echo $get_existing_value('publication_year') ?>"/>
 		<?php } ?>
 		<table class="form-table">
@@ -191,6 +202,19 @@ function updateJournalConferenceDisplay() {
 					</th>
 					<td>
 						<input type="text" id="paper_title" name="paper_title" size="30" value="<?php echo $get_existing_value('title') ?>" required/>
+					</td>
+				</tr>
+				<tr>
+					<th>
+						<label for="paper_id">Paper ID<br>(leave blank for auto-generated ID)</label>
+					</th>
+					<td>
+						<?php if ($is_editing) : ?>
+						<input type="hidden" name="paper_id" value="<?php echo $get_existing_value('paper_id') ?>"/>
+						<input type="text" size="30" value="<?php echo $get_existing_value('paper_id') ?>" disabled>
+						<?php else :  ?>
+						<input type="text" id="paper_id" name="paper_id" size="30" pattern="\d+" placeholder="Enter ID number [optional]">
+						<?php endif; ?>
 					</td>
 				</tr>
 				<tr>
