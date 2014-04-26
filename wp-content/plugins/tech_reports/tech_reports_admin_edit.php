@@ -231,7 +231,7 @@ function updateJournalConferenceDisplay() {
  						<label for="paper_journal">Journal Name:</label>
  					</th>
  					<td>
- 						<input id="paper_journal" type="text" name="paper_journal" value="<?php echo $get_existing_value('published_at') ?>" placeholder="Journal Name">
+ 						<input id="paper_journal" type="text" name="paper_journal" size="60" value="<?php echo $get_existing_value('published_at') ?>" placeholder="Journal Name">
  					</td>
  				</tr>
  				<tr class="conference_name" style="display: none">
@@ -239,7 +239,8 @@ function updateJournalConferenceDisplay() {
  						<label for="paper_conference">Conference Name:</label>
  					</th>
  					<td>
- 						<input id="paper_conference" type="text" name="paper_conference" value="<?php echo $get_existing_value('published_at') ?>" placeholder="Conference Name">
+ 						<p>Example format: Sixth Working IEEE/IFIP Conference on Software Architecture, Mumbai, India, January 2007. [Location and month are optional]</p>
+ 						<input id="paper_conference" type="text" name="paper_conference" size="60" value="<?php echo $get_existing_value('published_at') ?>" placeholder="Conference Name">
  					</td>
  				</tr>
 				<tr>

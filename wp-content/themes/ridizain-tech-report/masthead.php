@@ -20,7 +20,7 @@
 					<nav id="primary-navigation" class="site-navigation primary-navigation" role="navigation">
 						<h1 class="menu-toggle"><?php _e( 'Primary Menu', 'ridizain' ); ?></h1>
 						<a class="screen-reader-text skip-link" href="#content"><?php _e( 'Skip to content', 'ridizain' ); ?></a>
-						<?php wp_nav_menu( array( 'theme_location' => 'primary', 'menu_class' => 'nav-menu' ) ); ?>
+						<?php wp_nav_menu( array( 'theme_location' => 'primary', 'menu_class' => 'nav-menu', 'show_home' => true ) ); ?>
 				
 						<?php if (is_user_logged_in() === false) : ?>
 						<span class="page_item">

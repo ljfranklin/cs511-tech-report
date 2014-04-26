@@ -159,7 +159,12 @@ class PaperQuery {
 		}
 		$full_name .= ' ' . $author['last_name'];
 		if (strlen($author['suffix']) > 0) {
-			$full_name .= ' ' . strtoupper($author['suffix']);
+			if ($author['suffix'] === 'jr' || $author['suffix'] === 'sr') {
+				$suffix = ucfirst($author['suffix']);
+			} else {
+				$suffix = strtoupper($author['suffix']);
+			}
+			$full_name .= ' ' . $suffix;
 		}
 		return $full_name;
 	}

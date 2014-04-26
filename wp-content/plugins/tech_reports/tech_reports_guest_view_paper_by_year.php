@@ -17,16 +17,19 @@
 	<div id="primary" class="content-area">
 
 		<div id="content" class="site-content" role="main">
-        
-        <div class="year_pagination_links pagination_links">
-    		<?php foreach ($years as $this_year) : ?>
-    			<span class="<?php if ($year === $this_year) echo 'current_page'; ?>">
+		
+		<?php $split_years = array_chunk($years, 10); ?>
+		<?php foreach ($split_years as $year_block) : ?>
+			<div class="year_pagination_links pagination_links">
+			<?php foreach ($year_block as $this_year) : ?>
+				<span class="<?php if ($year === $this_year) echo 'current_page'; ?>">
 					<a href="<?php echo get_permalink() . '&year=' . $this_year; ?>">
-						<?php echo '\'' . substr(strval($this_year), 2, 2); ?>
+						<?php echo $this_year; ?>
 					</a>
 				</span>
 			<?php endforeach; ?>
-        </div>
+			</div>
+		<?php endforeach; ?>
         
         <h1 class="year_header">
 			<?php echo $year; ?>
