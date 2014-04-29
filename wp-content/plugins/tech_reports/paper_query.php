@@ -96,6 +96,7 @@ class PaperQuery {
 			if(!array_key_exists($row['paper_id'], $results_array)) {
 				$results_array[$row['paper_id']] = array(
 				   	'paper_id' => $row['paper_id'], 
+				   	'year_id' => $row['year_id'],
 			 	  	'title' => $row['title'],
 			 	  	'abstract' => $row['abstract'], 
 			 	  	'publication_year' => $row['publication_year'], 
@@ -122,8 +123,8 @@ class PaperQuery {
 		
 		foreach ($results_array as $index => $paper) {
 			$results_array[$index]['citation'] = $this->generate_citation($paper);
-			$results_array[$index]['identifier'] = $this->get_paper_identifier($paper['paper_id'], $paper['publication_year']);
-			$results_array[$index]['url'] = $this->get_paper_url($paper['paper_id'], $paper['publication_year']);
+			$results_array[$index]['identifier'] = $this->get_paper_identifier($paper['year_id'], $paper['publication_year']);
+			$results_array[$index]['url'] = $this->get_paper_url($paper['year_id'], $paper['publication_year']);
 		}
 		
 		return array_values($results_array);
@@ -169,21 +170,25 @@ class PaperQuery {
 		return $full_name;
 	}
 	
-	private function get_paper_identifier($paper_id, $publication_year=NULL) {
+	public function get_paper_identifier_by_id($paper_id) {
+		$results = $this->paper_db->get_row("SELECT year_id, publication_year FROM paper WHERE paper_id=$paper_id", ARRAY_A);
+		$year_id = $results['year_id'];
+		$publication_year = $results['publication_year'];
     	
-    	if (is_null($publication_year)) {
-			$publication_year = $this->paper_db->get_var("SELECT publication_year FROM paper WHERE paper_id=$paper_id");
-		}
+    	return $this->get_paper_identifier($year_id, $publication_year);
+	}
+	
+	public function get_paper_identifier($year_id, $publication_year) {
     	
     	$filename = "USC-CSSE-";
     	$filename .= strval($publication_year);
-    	$filename .= "-" . strval($paper_id);
+    	$filename .= "-" . strval($year_id);
     	
     	return $filename;
     }
     
-    private function get_paper_url($paper_id, $publication_year=NULL) {
-	 	$paper_identifier = $this->get_paper_identifier($paper_id, $publication_year);
+    private function get_paper_url($year_id, $publication_year) {
+	 	$paper_identifier = $this->get_paper_identifier($year_id, $publication_year);
 		$base_url = plugin_dir_url(__FILE__);
 		return $base_url . "uploads/$paper_identifier.pdf";
 	}
