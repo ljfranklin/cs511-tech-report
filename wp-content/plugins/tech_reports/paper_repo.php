@@ -222,8 +222,8 @@ class PaperRepo {
     	unlink($this->get_paper_filename($year_id, $old_year));
     }
     
-    private function rename_old_file($year_id, $old_year, $new_year) {
-    	rename($this->get_paper_filename($year_id, $old_year), $this->get_paper_filename($year_id, $new_year));
+    private function rename_old_file($old_year_id, $old_year, $year_id, $new_year) {
+    	rename($this->get_paper_filename($old_year_id, $old_year), $this->get_paper_filename($year_id, $new_year));
     }
     
     public function update_paper($new_values) {
@@ -233,11 +233,13 @@ class PaperRepo {
         $title = trim($new_values['title']);
         
         $old_year = $new_values['previous_year'];
+        $old_year_id = $new_values['previous_year_id'];
         $year = trim($new_values['publication_year']);
         $this->paper_db->update( 
 			'paper', 
 			array( 
 				'title' => $title,
+				'year_id' => $year_id,
 				'abstract' => trim($new_values['abstract']),
 				'type' => trim($new_values['type']),
 				'publication_year' => $year,
@@ -249,6 +251,7 @@ class PaperRepo {
 			),
 			array( 
 				'%s',
+				'%d',
 				'%s',
 				'%s',
 				'%d',
@@ -278,13 +281,14 @@ class PaperRepo {
 		
 		if (empty($new_values['file']['tmp_name']) === false) {
 			$this->process_file_upload($year_id, $year, $new_values['file']);
+			if ($old_year !== $year || $old_year_id !== $year_id) {
+				$this->delete_old_file($old_year_id, $old_year);
+			}
 		}
 		
-		if (empty($new_values['file']['tmp_name']) && $old_year !== $year) {
-    		$this->rename_old_file($year_id, $old_year, $year);
-    	} else if ($old_year !== $year) {
-			$this->delete_old_file($year_id, $old_year);
-		} 
+		if (empty($new_values['file']['tmp_name']) && ($old_year !== $year || $old_year_id !== $year_id)) {
+    		$this->rename_old_file($old_year_id, $old_year, $year_id, $year);
+    	}
 		
 		return $paper_id;
     }
