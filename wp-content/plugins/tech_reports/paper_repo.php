@@ -365,14 +365,36 @@ class PaperRepo {
     
     public function query_papers_by_search($query_term, $page_args) {
     
-    	$query = "SELECT paper.*, author.*, paperAuthorAssoc.author_index FROM paper 
-    		INNER JOIN paperAuthorAssoc ON paper.paper_id=paperAuthorAssoc.paper_id 
-    		INNER JOIN author ON author.author_id=paperAuthorAssoc.author_id
-    		WHERE (title LIKE '%$query_term%' OR abstract LIKE '%$query_term%' OR published_at LIKE '%$query_term%' OR keywords LIKE '%$query_term%' OR
-    		first_name LIKE '%$query_term%' OR
-			middle_name LIKE '%$query_term%' OR
-			last_name LIKE '%$query_term%')
-			ORDER BY paper.paper_id DESC, paperAuthorAssoc.author_index ASC";
+    	$query_term = strtolower($query_term);
+    
+    	$id_prefix = 'usc-csse-';
+    	$contains_id = strpos($query_term, $id_prefix);
+    	if ($contains_id !== false) {
+    		$ids = explode('-', substr($query_term, strlen($id_prefix)));
+    		
+    		if (count($ids) === 2 && is_numeric($ids[0]) && is_numeric($ids[1])) {
+    			$publication_year = $ids[0];
+    			$year_id = $ids[1];
+    		} else {
+    			$publication_year = 1900;
+    			$year_id = 0;
+    		}
+    			
+    		$query = "SELECT paper.*, author.*, paperAuthorAssoc.author_index FROM paper 
+				INNER JOIN paperAuthorAssoc ON paper.paper_id=paperAuthorAssoc.paper_id 
+				INNER JOIN author ON author.author_id=paperAuthorAssoc.author_id
+				WHERE (publication_year=$publication_year AND year_id=$year_id)
+				ORDER BY paper.paper_id DESC, paperAuthorAssoc.author_index ASC";
+    	} else {
+    		$query = "SELECT paper.*, author.*, paperAuthorAssoc.author_index FROM paper 
+				INNER JOIN paperAuthorAssoc ON paper.paper_id=paperAuthorAssoc.paper_id 
+				INNER JOIN author ON author.author_id=paperAuthorAssoc.author_id
+				WHERE (title LIKE '%$query_term%' OR abstract LIKE '%$query_term%' OR published_at LIKE '%$query_term%' OR keywords LIKE '%$query_term%' OR
+				first_name LIKE '%$query_term%' OR
+				middle_name LIKE '%$query_term%' OR
+				last_name LIKE '%$query_term%')
+				ORDER BY paper.paper_id DESC, paperAuthorAssoc.author_index ASC";
+    	}
 	
 		return new PaperQuery($query, $page_args);
     }

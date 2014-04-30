@@ -2,7 +2,7 @@
 	
 	jQuery(document).ready(function() {
 		
-		jQuery('.search-field').attr('placeholder', 'Search by paper title, author name, or abstract text');
+		jQuery('.search-field').attr('placeholder', 'Search by ID, title, author, abstract, or keywords');
 		
 		jQuery('.paper_expand.paper_display .paper_title').click(function(ev) {
 			ev.preventDefault();
