@@ -20,7 +20,8 @@ class PaperRepo {
 	public function create_plugin_table() {
 		if($this->paper_db->get_var("SHOW TABLES LIKE 'paper'") !== 'paper') {
 			$sql = "CREATE TABLE if not exists paper (
-				paper_id INT NOT NULL, 
+				paper_id INT NOT NULL AUTO_INCREMENT,
+				year_id INT NOT NULL,
 				title TEXT NOT NULL,
 				abstract TEXT NOT NULL,
 				publication_year YEAR NOT NULL,
@@ -28,7 +29,8 @@ class PaperRepo {
 				keywords TEXT NULL,
 				type VARCHAR(40) NOT NULL,
 				download_count INT NOT NULL DEFAULT 0,
-				PRIMARY KEY (paper_id)
+				PRIMARY KEY (paper_id),
+				UNIQUE KEY (year_id, publication_year)
 				);";
 			$this->paper_db->query($sql);
 		}
@@ -58,7 +60,7 @@ class PaperRepo {
     
     public function delete_paper($paper_id) {
 		
-		unlink($this->get_paper_filename($paper_id));
+		unlink($this->get_paper_filename_by_id($paper_id));
 		
 		$this->paper_db->delete( 'paperAuthorAssoc', array( 'paper_id' => $paper_id ));
 		$this->paper_db->delete( 'paper', array( 'paper_id' => $paper_id ));
@@ -69,7 +71,7 @@ class PaperRepo {
 	public function delete_multiple_papers($paper_ids) {
 		
 		foreach ($paper_ids as $paper_id){
-			unlink($this->get_paper_filename($paper_id));
+			unlink($this->get_paper_filename_by_id($paper_id));
 			$this->paper_db->delete( 'paperAuthorAssoc', array( 'paper_id' => $paper_id ));
 			$this->paper_db->delete( 'paper', array( 'paper_id' => $paper_id ));
 		}
@@ -77,12 +79,25 @@ class PaperRepo {
 		$this->delete_authors_without_papers();
 	}
 	
-	private function get_paper_filename($paper_id) {
+	private function get_paper_filename_by_id($paper_id) {
 	
     	$plugin_dir = plugin_dir_path( __FILE__ );
     
-    	$query = $this->query_single_paper($paper_id);
-    	$identifier = $query->get_papers()[0]['identifier'];
+    	$query = new PaperQuery();
+    	$identifier = $query->get_paper_identifier_by_id($paper_id);
+    	
+    	return sprintf('%suploads/%s.pdf',
+    		$plugin_dir,
+    	    $identifier
+    	);
+    }
+    
+    private function get_paper_filename($year_id, $publication_year) {
+	
+    	$plugin_dir = plugin_dir_path( __FILE__ );
+    
+    	$query = new PaperQuery();
+    	$identifier = $query->get_paper_identifier($year_id, $publication_year);
     	
     	return sprintf('%suploads/%s.pdf',
     		$plugin_dir,
@@ -96,12 +111,12 @@ class PaperRepo {
     
     public function add_new_paper($values) {
        	
-       	$paper_id = empty($values['paper_id']) ? $this->get_next_id() : $values['paper_id'];   
+       	$year_id = empty($values['year_id']) ? $this->get_next_id($values['publication_year']) : $values['year_id'];   
        	
         $success = $this->paper_db->insert( 
 			'paper', 
 			array( 
-				'paper_id' => $paper_id,
+				'year_id' => $year_id,
 				'title' => trim($values['title']),
 				'abstract' => trim($values['abstract']),
 				'type' => trim($values['type']),
@@ -119,6 +134,7 @@ class PaperRepo {
 				'%s'
 			) 
 		);
+		$paper_id = $this->paper_db->insert_id;
 		
 		if ($success === false) {
 			return NULL;
@@ -126,14 +142,14 @@ class PaperRepo {
 		
 		$this->add_authors($paper_id, $values['new_authors'], $values['existing_authors']);
 		
-		$this->process_file_upload($paper_id, trim($values['publication_year']), $values['file']);
+		$this->process_file_upload($year_id, trim($values['publication_year']), $values['file']);
 		
 		return $paper_id;
     }
     
-    private function get_next_id() {
+    private function get_next_id($publication_year) {
     	$highest_id = $this->paper_db->get_var(
-    		"SELECT IFNULL(MAX(paper_id), 0) FROM paper"
+    		"SELECT IFNULL(MAX(year_id), 499) FROM paper WHERE publication_year=$publication_year"
     	);
     	return ($highest_id + 1);
     }
@@ -181,7 +197,7 @@ class PaperRepo {
 		}
     }
     
-    private function process_file_upload($paper_id, $year, $file) {
+    private function process_file_upload($year_id, $year, $file) {
     
     	$finfo = new finfo(FILEINFO_MIME_TYPE);
     	if (false === array_search(
@@ -196,29 +212,34 @@ class PaperRepo {
     	
 		if (!move_uploaded_file(
         	$file['tmp_name'],
-        	$this->get_paper_filename($paper_id, $year)
+        	$this->get_paper_filename($year_id, $year)
     	)) {
     	    throw new RuntimeException('Failed to move uploaded file.');
     	}
     }
     
-    private function delete_old_file($paper_id, $old_year) {
-    	unlink($this->get_paper_filename($paper_id, $old_year));
+    private function delete_old_file($year_id, $old_year) {
+    	unlink($this->get_paper_filename($year_id, $old_year));
     }
     
-    private function rename_old_file($paper_id, $old_year, $new_year) {
-    	rename($this->get_paper_filename($paper_id, $old_year), $this->get_paper_filename($paper_id, $new_year));
+    private function rename_old_file($old_year_id, $old_year, $year_id, $new_year) {
+    	rename($this->get_paper_filename($old_year_id, $old_year), $this->get_paper_filename($year_id, $new_year));
     }
     
-    public function update_paper($new_values, $old_year) {
+    public function update_paper($new_values) {
         
         $paper_id = $new_values['paper_id'];
+        $year_id = $new_values['year_id'];
         $title = trim($new_values['title']);
+        
+        $old_year = $new_values['previous_year'];
+        $old_year_id = $new_values['previous_year_id'];
         $year = trim($new_values['publication_year']);
         $this->paper_db->update( 
 			'paper', 
 			array( 
 				'title' => $title,
+				'year_id' => $year_id,
 				'abstract' => trim($new_values['abstract']),
 				'type' => trim($new_values['type']),
 				'publication_year' => $year,
@@ -230,6 +251,7 @@ class PaperRepo {
 			),
 			array( 
 				'%s',
+				'%d',
 				'%s',
 				'%s',
 				'%d',
@@ -258,14 +280,15 @@ class PaperRepo {
 		$this->paper_db->query("DELETE FROM author WHERE author_id NOT IN (SELECT author_id FROM paperAuthorAssoc)");
 		
 		if (empty($new_values['file']['tmp_name']) === false) {
-			$this->process_file_upload($paper_id, $year, $new_values['file']);
+			$this->process_file_upload($year_id, $year, $new_values['file']);
+			if ($old_year !== $year || $old_year_id !== $year_id) {
+				$this->delete_old_file($old_year_id, $old_year);
+			}
 		}
 		
-		if (empty($new_values['file']['tmp_name']) && $old_year !== $year) {
-    		$this->rename_old_file($paper_id, $old_year, $year);
-    	} else if ($old_year !== $year) {
-			$this->delete_old_file($paper_id, $old_year);
-		} 
+		if (empty($new_values['file']['tmp_name']) && ($old_year !== $year || $old_year_id !== $year_id)) {
+    		$this->rename_old_file($old_year_id, $old_year, $year_id, $year);
+    	}
 		
 		return $paper_id;
     }
@@ -303,7 +326,7 @@ class PaperRepo {
     	$query = "SELECT paper.*, author.*, paperAuthorAssoc.author_index FROM paper 
     		INNER JOIN paperAuthorAssoc ON paper.paper_id=paperAuthorAssoc.paper_id
     		INNER JOIN author ON author.author_id=paperAuthorAssoc.author_id
-    		ORDER BY paperAuthorAssoc.author_index ASC";
+    		ORDER BY paperAuthorAssoc.author_index ASC, paper.publication_year DESC, paper.year_id DESC";
     	
     	return new AuthorQuery($query, $page_args);
     }
@@ -342,14 +365,36 @@ class PaperRepo {
     
     public function query_papers_by_search($query_term, $page_args) {
     
-    	$query = "SELECT paper.*, author.*, paperAuthorAssoc.author_index FROM paper 
-    		INNER JOIN paperAuthorAssoc ON paper.paper_id=paperAuthorAssoc.paper_id 
-    		INNER JOIN author ON author.author_id=paperAuthorAssoc.author_id
-    		WHERE (title LIKE '%$query_term%' OR abstract LIKE '%$query_term%' OR published_at LIKE '%$query_term%' OR keywords LIKE '%$query_term%' OR
-    		first_name LIKE '%$query_term%' OR
-			middle_name LIKE '%$query_term%' OR
-			last_name LIKE '%$query_term%')
-			ORDER BY paper.paper_id DESC, paperAuthorAssoc.author_index ASC";
+    	$query_term = strtolower($query_term);
+    
+    	$id_prefix = 'usc-csse-';
+    	$contains_id = strpos($query_term, $id_prefix);
+    	if ($contains_id !== false) {
+    		$ids = explode('-', substr($query_term, strlen($id_prefix)));
+    		
+    		if (count($ids) === 2 && is_numeric($ids[0]) && is_numeric($ids[1])) {
+    			$publication_year = $ids[0];
+    			$year_id = $ids[1];
+    		} else {
+    			$publication_year = 1900;
+    			$year_id = 0;
+    		}
+    			
+    		$query = "SELECT paper.*, author.*, paperAuthorAssoc.author_index FROM paper 
+				INNER JOIN paperAuthorAssoc ON paper.paper_id=paperAuthorAssoc.paper_id 
+				INNER JOIN author ON author.author_id=paperAuthorAssoc.author_id
+				WHERE (publication_year=$publication_year AND year_id=$year_id)
+				ORDER BY paper.paper_id DESC, paperAuthorAssoc.author_index ASC";
+    	} else {
+    		$query = "SELECT paper.*, author.*, paperAuthorAssoc.author_index FROM paper 
+				INNER JOIN paperAuthorAssoc ON paper.paper_id=paperAuthorAssoc.paper_id 
+				INNER JOIN author ON author.author_id=paperAuthorAssoc.author_id
+				WHERE (title LIKE '%$query_term%' OR abstract LIKE '%$query_term%' OR published_at LIKE '%$query_term%' OR keywords LIKE '%$query_term%' OR
+				first_name LIKE '%$query_term%' OR
+				middle_name LIKE '%$query_term%' OR
+				last_name LIKE '%$query_term%')
+				ORDER BY paper.paper_id DESC, paperAuthorAssoc.author_index ASC";
+    	}
 	
 		return new PaperQuery($query, $page_args);
     }

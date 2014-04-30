@@ -20,7 +20,9 @@
     } 
     if(isset($_POST['action']) && $_POST['action'] == 'edit') {
     	$values = get_values();
-    	$paper_id = $paper_repo->update_paper($values, $_POST['previous_year']);
+    	$values['previous_year'] = $_POST['previous_year'];
+    	$values['previous_year_id'] = $_POST['previous_year_id'];
+    	$paper_id = $paper_repo->update_paper($values);
 		
 		wp_redirect(get_site_url()."/?paper=$paper_id");
 		exit;
@@ -51,6 +53,7 @@
     	
     	return array(
     		'paper_id' => $_POST['paper_id'],
+    		'year_id' => $_POST['year_id'],
     		'title' => $_POST['paper_title'],
     		'existing_authors' => $existing_authors,
     		'new_authors' => $new_authors,
@@ -193,6 +196,8 @@ function updateJournalConferenceDisplay() {
 		<input type="hidden" name="action" value="<?php echo $is_editing ? 'edit' : 'create' ?>"/>
 		<?php if ($is_editing) { ?>
 			<input type="hidden" name="previous_year" value="<?php echo $get_existing_value('publication_year') ?>"/>
+			<input type="hidden" name="previous_year_id" value="<?php echo $get_existing_value('year_id') ?>"/>
+			<input type="hidden" name="paper_id" value="<?php echo $get_existing_value('paper_id') ?>"/>
 		<?php } ?>
 		<table class="form-table">
 			<tbody>
@@ -206,15 +211,10 @@ function updateJournalConferenceDisplay() {
 				</tr>
 				<tr>
 					<th>
-						<label for="paper_id">Paper ID<br>(leave blank for auto-generated ID)</label>
+						<label for="year_id">Year ID<br>(leave blank for auto-generated ID)</label>
 					</th>
 					<td>
-						<?php if ($is_editing) : ?>
-						<input type="hidden" name="paper_id" value="<?php echo $get_existing_value('paper_id') ?>"/>
-						<input type="text" size="30" value="<?php echo $get_existing_value('paper_id') ?>" disabled>
-						<?php else :  ?>
-						<input type="text" id="paper_id" name="paper_id" size="30" pattern="\d+" placeholder="Enter ID number [optional]">
-						<?php endif; ?>
+						<input type="text" id="year_id" name="year_id" size="30" value="<?php echo $get_existing_value('year_id') ?>" pattern="\d+" placeholder="Enter ID number [optional]">
 					</td>
 				</tr>
 				<tr>
@@ -263,7 +263,7 @@ function updateJournalConferenceDisplay() {
  						<label for="paper_conference">Conference Name:</label>
  					</th>
  					<td>
- 						<p>Example format: Sixth Working IEEE/IFIP Conference on Software Architecture, Mumbai, India, January 2007. [Location and month are optional]</p>
+ 						<p>Example format: Sixth Working IEEE/IFIP Conference on Software Architecture, Mumbai, India, January. [Location and month are optional]</p>
  						<input id="paper_conference" type="text" name="paper_conference" size="60" value="<?php echo $get_existing_value('published_at') ?>" placeholder="Conference Name">
  					</td>
  				</tr>

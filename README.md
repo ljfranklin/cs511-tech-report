@@ -73,4 +73,8 @@ Plugins > Installed Plugins > Technical Report Plugin > Activate
 #### Disable comments via UI
 Plugins > Installed Plugins > Disable Comments > Settings > Select Everywhere > Save Changes
 
+#### Update code on server (SSH into server)
+		cd /var/www
+		git pull
+
 #### Finished!
