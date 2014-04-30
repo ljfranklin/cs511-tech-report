@@ -326,7 +326,7 @@ class PaperRepo {
     	$query = "SELECT paper.*, author.*, paperAuthorAssoc.author_index FROM paper 
     		INNER JOIN paperAuthorAssoc ON paper.paper_id=paperAuthorAssoc.paper_id
     		INNER JOIN author ON author.author_id=paperAuthorAssoc.author_id
-    		ORDER BY paperAuthorAssoc.author_index ASC";
+    		ORDER BY paperAuthorAssoc.author_index ASC, paper.publication_year DESC, paper.year_id DESC";
     	
     	return new AuthorQuery($query, $page_args);
     }
