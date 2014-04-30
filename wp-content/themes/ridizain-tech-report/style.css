@@ -7,6 +7,10 @@
 
 .paper_main_data {
 	border-style: none;
+	table-layout: fixed;
+}
+.paper_main_data th {
+	width: 18%;
 }
 .paper_main_data td {
 	border-style: none;
@@ -161,17 +165,17 @@ body, .site, .site-footer, .site-header, .site-content .entry-content, .site-con
 	overflow: auto;
 }
 .paper_display .paper_title {
-	font-size: 20px;
-	line-height: 30px;
+	font-size: 18px;
+	line-height: 22px;
 	text-transform: none;
 }
 .paper_display .paper_title .paper_title_text {
 	font-weight: bold;
 }
 .paper_display .paper_title .genericon {
-	font-size: 30px;
-	height: 30px;
-	width: 30px;
+	font-size: 22px;
+	height: 22px;
+	width: 22px;
 	float: right;
 }
 .paper_display:not(.expanded) > .paper_title > .collapse_icon {
