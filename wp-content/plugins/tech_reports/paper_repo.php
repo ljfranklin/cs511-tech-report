@@ -393,7 +393,7 @@ class PaperRepo {
 				first_name LIKE '%$query_term%' OR
 				middle_name LIKE '%$query_term%' OR
 				last_name LIKE '%$query_term%')
-				ORDER BY paper.paper_id DESC, paperAuthorAssoc.author_index ASC";
+				ORDER BY paper.publication_year DESC, paper.year_id DESC";
     	}
 	
 		return new PaperQuery($query, $page_args);
@@ -430,7 +430,7 @@ class PaperRepo {
     		INNER JOIN paperAuthorAssoc ON paper.paper_id=paperAuthorAssoc.paper_id 
     		INNER JOIN author ON author.author_id=paperAuthorAssoc.author_id
     		WHERE paper.publication_year=$year
-    		ORDER BY paper.paper_id DESC, paperAuthorAssoc.author_index ASC";
+    		ORDER BY paper.publication_year DESC, paper.year_id DESC";
     }
 }
 
