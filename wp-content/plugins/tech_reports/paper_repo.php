@@ -386,14 +386,22 @@ class PaperRepo {
 				WHERE (publication_year=$publication_year AND year_id=$year_id)
 				ORDER BY paper.paper_id DESC, paperAuthorAssoc.author_index ASC";
     	} else {
-    		$query = "SELECT paper.*, author.*, paperAuthorAssoc.author_index FROM paper 
+				
+			$query = "SELECT paper.*, author.*, paperAuthorAssoc.author_index FROM paper
 				INNER JOIN paperAuthorAssoc ON paper.paper_id=paperAuthorAssoc.paper_id 
 				INNER JOIN author ON author.author_id=paperAuthorAssoc.author_id
-				WHERE (title LIKE '%$query_term%' OR abstract LIKE '%$query_term%' OR published_at LIKE '%$query_term%' OR keywords LIKE '%$query_term%' OR
-				first_name LIKE '%$query_term%' OR
-				middle_name LIKE '%$query_term%' OR
-				last_name LIKE '%$query_term%')
-				ORDER BY paper.publication_year DESC, paper.year_id DESC";
+				WHERE paper.paper_id IN
+					(SELECT paper.paper_id FROM paper 
+					WHERE (title LIKE '%$query_term%' OR abstract LIKE '%$query_term%' OR 
+						published_at LIKE '%$query_term%' OR keywords LIKE '%$query_term%')
+					UNION
+					SELECT paperAuthorAssoc.paper_id FROM paperAuthorAssoc
+					INNER JOIN author ON paperAuthorAssoc.author_id=author.author_id AND
+						(first_name LIKE '%$query_term%' OR
+						middle_name LIKE '%$query_term%' OR
+						last_name LIKE '%$query_term%')
+					)
+				ORDER BY paper.publication_year DESC, paper.year_id DESC, paperAuthorAssoc.author_index ASC";
     	}
 	
 		return new PaperQuery($query, $page_args);
@@ -430,7 +438,7 @@ class PaperRepo {
     		INNER JOIN paperAuthorAssoc ON paper.paper_id=paperAuthorAssoc.paper_id 
     		INNER JOIN author ON author.author_id=paperAuthorAssoc.author_id
     		WHERE paper.publication_year=$year
-    		ORDER BY paper.publication_year DESC, paper.year_id DESC";
+    		ORDER BY paper.publication_year DESC, paper.year_id DESC, paperAuthorAssoc.author_index ASC";
     }
 }
 
